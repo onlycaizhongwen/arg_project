@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数据清洗与 RAG 服务功能需求图</title>
+  <style>
+    :root {
+      --ink: #20242c;
+      --muted: #586174;
+      --line: #d8dee8;
+      --blue: #1769aa;
+      --cyan: #0f9ac8;
+      --green: #5b9f42;
+      --amber: #df8a18;
+      --red: #b94a48;
+      --panel: #ffffff;
+      --bg: #f4f7fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1180px;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    .page {
+      padding: 28px;
+    }
+
+    .canvas {
+      max-width: 1580px;
+      margin: 0 auto;
+      border: 2px solid #5f86df;
+      background: #fff;
+      box-shadow: 0 16px 42px rgba(38, 56, 88, 0.12);
+    }
+
+    header {
+      padding: 22px 24px 18px;
+      text-align: center;
+      border-bottom: 10px solid var(--blue);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .business-row,
+    .infra-row,
+    .model-row {
+      display: grid;
+      align-items: stretch;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 10px solid #eef3fb;
+    }
+
+    .business-row {
+      grid-template-columns: 170px repeat(5, 1fr);
+      background: var(--blue);
+    }
+
+    .infra-row {
+      grid-template-columns: 190px repeat(5, 1fr);
+      background: #0d65a8;
+    }
+
+    .model-row {
+      grid-template-columns: 190px repeat(5, 1fr);
+      background: #4c90dd;
+      border-bottom: 0;
+    }
+
+    .lane-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .pill {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 21px;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(20, 34, 60, 0.06);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 260px 230px 1fr 250px;
+      gap: 18px;
+      padding: 18px 22px;
+      border-bottom: 10px solid #eef3fb;
+      background: #fff;
+    }
+
+    .vertical-governance {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .vertical-card {
+      display: flex;
+      min-height: 560px;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 12px;
+      color: #fff;
+      background: #78b94a;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.45;
+      text-align: center;
+      writing-mode: vertical-rl;
+      letter-spacing: 5px;
+    }
+
+    .asset-panel,
+    .rag-panel {
+      padding: 18px;
+      background: #0899d0;
+    }
+
+    .asset-panel h2,
+    .rag-panel h2 {
+      margin: 0 0 18px;
+      color: #fff;
+      font-size: 27px;
+      text-align: center;
+    }
+
+    .asset-list,
+    .rag-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .small-box {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .flow {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      min-height: 116px;
+      padding: 18px;
+      background: #f79a2b;
+    }
+
+    .stage-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .stage-items {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .stage.wide .stage-items {
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+    }
+
+    .stage.compact .stage-items {
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+    }
+
+    .req-card {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 760;
+      line-height: 1.28;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 6px;
+      color: #6f4304;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      padding: 14px 22px 20px;
+      background: #fff;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--blue);
+    }
+
+    .dot.green { background: var(--green); }
+    .dot.cyan { background: var(--cyan); }
+    .dot.amber { background: var(--amber); }
+    .dot.red { background: var(--red); }
+    .dot.light { background: #4c90dd; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="canvas" aria-label="数据清洗与 RAG 服务功能需求图">
+      <header>
+        <h1>数据清洗与 RAG 服务功能需求图</h1>
+        <div class="subtitle">从业务应用倒推平台能力：接入、清洗、资产、向量化、检索、治理与基础设施</div>
+      </header>
+
+      <section class="business-row">
+        <div class="lane-title">业务应用</div>
+        <div class="pill">智能客服</div>
+        <div class="pill">企业知识搜索</div>
+        <div class="pill">合规审查助手</div>
+        <div class="pill">内容推荐引擎</div>
+        <div class="pill">文档摘要服务</div>
+      </section>
+
+      <section class="main">
+        <div class="vertical-governance">
+          <div class="vertical-card">数据接入管理</div>
+          <div class="vertical-card">清洗流程监控</div>
+          <div class="vertical-card">模型与索引管理</div>
+        </div>
+
+        <aside class="asset-panel">
+          <h2>数据资产管理</h2>
+          <div class="asset-list">
+            <div class="small-box">原始文档库</div>
+            <div class="small-box">清洗后文本库</div>
+            <div class="small-box">向量索引库</div>
+            <div class="small-box">元数据管理</div>
+            <div class="small-box">数据血缘追踪</div>
+          </div>
+        </aside>
+
+        <section class="flow">
+          <div class="stage compact">
+            <div class="stage-title">FR-01<br>多源异构<br>数据接入</div>
+            <div class="stage-items">
+              <div class="req-card"><span><span class="tag">API</span><br>统一接入网关</span></div>
+              <div class="req-card"><span><span class="tag">File</span><br>PDF / Word / Excel / PPT / HTML / JSON / CSV</span></div>
+              <div class="req-card"><span><span class="tag">Stream</span><br>实时日志 / 消息队列</span></div>
+              <div class="req-card"><span><span class="tag">DB</span><br>MySQL / Oracle 同步</span></div>
+              <div class="req-card"><span><span class="tag">System</span><br>OA / CRM / 第三方系统</span></div>
+            </div>
+          </div>
+
+          <div class="stage wide">
+            <div class="stage-title">FR-02<br>智能数据<br>清洗</div>
+            <div class="stage-items">
+              <div class="req-card">格式解析<br>保留标题、段落、页码、表格结构</div>
+              <div class="req-card">噪声过滤<br>页眉页脚、重复内容、特殊字符</div>
+              <div class="req-card">质量校验<br>完整性、一致性、编码和规则校验</div>
+            </div>
+          </div>
+
+          <div class="stage">
+            <div class="stage-title">FR-03<br>语义切分<br>与向量化</div>
+            <div class="stage-items">
+              <div class="req-card">段落 / 主题 / 固定长度 / 重叠窗口切分</div>
+              <div class="req-card">元数据关联<br>文档 ID、页码、章节、权限标签</div>
+              <div class="req-card">Embedding 模型<br>BGE / OpenAI / Sentence Transformers</div>
+              <div class="req-card">领域模型扩展<br>支持替换和微调</div>
+            </div>
+          </div>
+
+          <div class="stage">
+            <div class="stage-title">FR-04<br>向量存储<br>与索引优化</div>
+            <div class="stage-items">
+              <div class="req-card">向量存储引擎<br>Milvus / Qdrant / pgvector</div>
+              <div class="req-card">混合存储<br>关系库 + Redis + 对象存储</div>
+              <div class="req-card">索引构建<br>HNSW / IVF 策略</div>
+              <div class="req-card">索引优化<br>重建、更新、降维、归档</div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="rag-panel">
+          <h2>FR-05<br>RAG 检索漏斗</h2>
+          <div class="rag-list">
+            <div class="small-box">多路召回<br>语义 / 关键词 / 元数据</div>
+            <div class="small-box">粗排 Pre-ranking<br>10W -> 1000</div>
+            <div class="small-box">去重 Dedup<br>SimHash / MinHash</div>
+            <div class="small-box">打散 Diversity<br>MMR / DPP</div>
+            <div class="small-box">精排 Rerank<br>50 - 100 候选</div>
+            <div class="small-box">API 接口服务</div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="infra-row">
+        <div class="lane-title">计算与存储<br>基础设施</div>
+        <div class="pill">分布式向量数据库集群</div>
+        <div class="pill">关系型数据库<br>PostgreSQL / MySQL</div>
+        <div class="pill">缓存服务<br>Redis</div>
+        <div class="pill">对象存储<br>S3 / OSS / MinIO</div>
+        <div class="pill">消息队列<br>Kafka / RabbitMQ</div>
+      </section>
+
+      <section class="model-row">
+        <div class="lane-title">模型与算法<br>服务</div>
+        <div class="pill">Embedding 模型服务</div>
+        <div class="pill">粗排模型服务<br>DSSM / FM / DNN</div>
+        <div class="pill">重排序模型服务</div>
+        <div class="pill">规则引擎</div>
+        <div class="pill">质量校验模型</div>
+      </section>
+
+      <section class="legend">
+        <div class="legend-item"><span class="dot"></span>业务入口</div>
+        <div class="legend-item"><span class="dot green"></span>横向治理</div>
+        <div class="legend-item"><span class="dot cyan"></span>数据资产</div>
+        <div class="legend-item"><span class="dot amber"></span>核心功能需求</div>
+        <div class="legend-item"><span class="dot red"></span>RAG 服务出口</div>
+        <div class="legend-item"><span class="dot light"></span>模型与基础能力</div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

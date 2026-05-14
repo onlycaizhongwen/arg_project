@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数据清洗与 RAG 服务总体架构图</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 1360px;
+      color: #252933;
+      background: #f3f7fc;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    .page { padding: 24px; }
+    .canvas {
+      max-width: 1680px;
+      margin: 0 auto;
+      background: #fff;
+      border: 2px solid #5b83d7;
+      box-shadow: 0 16px 42px rgba(25, 45, 80, .12);
+    }
+    .title {
+      padding: 24px 20px 18px;
+      text-align: center;
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1.1;
+      border-bottom: 10px solid #0f67aa;
+    }
+    .business {
+      display: grid;
+      grid-template-columns: 180px repeat(5, 1fr);
+      gap: 16px;
+      padding: 18px 22px;
+      background: #0f67aa;
+      border-bottom: 10px solid #edf3fb;
+    }
+    .lane-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 30px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .pill {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 21px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 286px 220px 1fr 220px;
+      gap: 14px;
+      padding: 14px 22px;
+      border-bottom: 10px solid #edf3fb;
+    }
+    .vertical {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .vbar {
+      min-height: 584px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 8px;
+      color: #fff;
+      background: #78b94b;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.42;
+      writing-mode: vertical-rl;
+      letter-spacing: 5px;
+    }
+    .asset, .rag {
+      padding: 16px;
+      background: #0797cf;
+    }
+    .asset h2, .rag h2 {
+      margin: 0 0 16px;
+      color: #fff;
+      font-size: 26px;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+    .box {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .core {
+      display: grid;
+      gap: 12px;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 14px;
+      min-height: 126px;
+      padding: 16px;
+      background: #f79a2b;
+    }
+    .stage-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 27px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+    }
+    .stage-items {
+      display: grid;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .stage-items.five { grid-template-columns: repeat(5, 1fr); }
+    .stage-items.three { grid-template-columns: repeat(3, 1fr); }
+    .stage-items.four { grid-template-columns: repeat(4, 1fr); }
+    .card {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+    }
+    .infra, .models {
+      display: grid;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 10px solid #edf3fb;
+    }
+    .infra {
+      grid-template-columns: 190px repeat(5, 1fr);
+      background: #0f67aa;
+    }
+    .models {
+      grid-template-columns: 190px repeat(4, 1fr);
+      background: #4b91df;
+      border-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="canvas" aria-label="数据清洗与 RAG 服务总体架构图">
+      <div class="title">数据清洗与 RAG 服务架构</div>
+
+      <section class="business">
+        <div class="lane-title">业务应用</div>
+        <div class="pill">智能客服</div>
+        <div class="pill">企业知识搜索</div>
+        <div class="pill">合规审查助手</div>
+        <div class="pill">内容推荐引擎</div>
+        <div class="pill">文档摘要服务</div>
+      </section>
+
+      <section class="main">
+        <div class="vertical">
+          <div class="vbar">数据接入管理</div>
+          <div class="vbar">清洗流程监控</div>
+          <div class="vbar">模型与索引管理</div>
+        </div>
+
+        <aside class="asset">
+          <h2>数据资产管理</h2>
+          <div class="stack">
+            <div class="box">原始文档库</div>
+            <div class="box">清洗后文本库</div>
+            <div class="box">向量索引库</div>
+            <div class="box">元数据管理</div>
+            <div class="box">数据血缘追踪</div>
+          </div>
+        </aside>
+
+        <section class="core">
+          <div class="stage">
+            <div class="stage-title">多源异构<br>数据接入</div>
+            <div class="stage-items five">
+              <div class="card">API 对接网关</div>
+              <div class="card">文件上传服务<br>PDF / Word / Excel / PPT<br>HTML / JSON / CSV<br>图像 / 音视频</div>
+              <div class="card">流式接入<br>实时日志 / 消息队列</div>
+              <div class="card">数据库同步<br>MySQL / Oracle</div>
+              <div class="card">第三方系统集成<br>企业 OA / CRM</div>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-title">智能数据<br>清洗</div>
+            <div class="stage-items three">
+              <div class="card">格式解析<br>PDF 表格 / 图文混排<br>Word 嵌入式媒体<br>Markdown 层级</div>
+              <div class="card">噪声过滤<br>页眉页脚 / 特殊字符<br>冗余格式 / 编码标准化</div>
+              <div class="card">质量校验<br>规则 / 模型校验<br>完整性 / 一致性</div>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-title">语义切分<br>与向量化</div>
+            <div class="stage-items four">
+              <div class="card">语义切分<br>段落 / 主题 / 固定长度<br>重叠窗口</div>
+              <div class="card">元数据关联<br>文档 ID / 页码 / 章节</div>
+              <div class="card">向量化模型<br>BGE / OpenAI<br>Sentence Transformers</div>
+              <div class="card">领域模型微调</div>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-title">向量存储<br>与索引优化</div>
+            <div class="stage-items four">
+              <div class="card">向量存储引擎<br>Milvus / Pinecone / Weaviate</div>
+              <div class="card">混合存储<br>PostgreSQL + Redis</div>
+              <div class="card">索引构建<br>HNSW / IVF 算法</div>
+              <div class="card">索引优化<br>定期更新 / PCA 降维</div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="rag">
+          <h2>RAG 检索服务开发</h2>
+          <div class="stack">
+            <div class="box">语义检索服务</div>
+            <div class="box">混合检索<br>语义 + 关键词</div>
+            <div class="box">重排序<br>Cross-Encoder</div>
+            <div class="box">API 接口开发</div>
+            <div class="box">多端适配<br>Web / APP / 企业微信</div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="infra">
+        <div class="lane-title">计算与存储<br>基础设施</div>
+        <div class="pill">分布式向量数据库集群</div>
+        <div class="pill">关系型数据库<br>PostgreSQL / MySQL</div>
+        <div class="pill">缓存服务<br>Redis</div>
+        <div class="pill">对象存储<br>S3 / OSS</div>
+        <div class="pill">消息队列<br>Kafka / RabbitMQ</div>
+      </section>
+
+      <section class="models">
+        <div class="lane-title">模型与算法服务</div>
+        <div class="pill">Embedding 模型服务</div>
+        <div class="pill">重排序模型服务</div>
+        <div class="pill">规则引擎</div>
+        <div class="pill">质量校验模型</div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

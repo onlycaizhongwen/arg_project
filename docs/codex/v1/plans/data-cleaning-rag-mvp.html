@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数据清洗与 RAG 服务 MVP 版本图</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --ink: #1f2530;
+      --muted: #5c667a;
+      --blue: #1468a8;
+      --teal: #1196a7;
+      --green: #4f9a4f;
+      --orange: #e28a22;
+      --red: #b64b4b;
+      --line: #d9e1ed;
+      --card: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1200px;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    .page {
+      padding: 28px;
+    }
+
+    .canvas {
+      max-width: 1580px;
+      margin: 0 auto;
+      border: 2px solid #5b83d7;
+      background: #fff;
+      box-shadow: 0 18px 44px rgba(30, 50, 85, 0.14);
+    }
+
+    header {
+      padding: 24px 28px 18px;
+      text-align: center;
+      border-bottom: 8px solid var(--blue);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 22px 26px;
+      border-bottom: 8px solid #eef3fb;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 25px;
+      line-height: 1.2;
+    }
+
+    .closed-loop {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .loop-step {
+      position: relative;
+      min-height: 96px;
+      padding: 14px 10px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .loop-step:nth-child(2) { background: #0e7fab; }
+    .loop-step:nth-child(3) { background: var(--teal); }
+    .loop-step:nth-child(4) { background: #45a069; }
+    .loop-step:nth-child(5) { background: var(--green); }
+    .loop-step:nth-child(6) { background: #d69a25; }
+    .loop-step:nth-child(7) { background: var(--orange); }
+    .loop-step:nth-child(8) { background: var(--red); }
+
+    .loop-step::after {
+      content: ">";
+      position: absolute;
+      right: -11px;
+      top: 50%;
+      z-index: 2;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      color: #4f627c;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 22px;
+      box-shadow: 0 0 0 1px var(--line);
+    }
+
+    .loop-step:last-child::after {
+      display: none;
+    }
+
+    .mvp-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .phase {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--card);
+    }
+
+    .phase h3 {
+      margin: 0;
+      min-height: 70px;
+      padding: 14px 12px;
+      color: #fff;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .phase:nth-child(2) h3 { background: var(--teal); }
+    .phase:nth-child(3) h3 { background: var(--green); }
+    .phase:nth-child(4) h3 { background: var(--orange); }
+    .phase:nth-child(5) h3 { background: var(--red); }
+
+    .phase ul {
+      margin: 0;
+      padding: 16px 18px 18px 28px;
+      min-height: 245px;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .phase li {
+      margin-bottom: 8px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .decision {
+      min-height: 120px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px;
+    }
+
+    .decision strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--blue);
+      font-size: 17px;
+    }
+
+    .decision span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .scope {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .scope-card {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .scope-card h3 {
+      margin: 0;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 19px;
+      background: var(--green);
+    }
+
+    .scope-card.out h3 {
+      background: #747f91;
+    }
+
+    .scope-card ul {
+      margin: 0;
+      padding: 14px 18px 16px 30px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .demo {
+      display: grid;
+      grid-template-columns: 240px 1fr 320px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .demo-box {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 16px;
+    }
+
+    .demo-box h3 {
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-size: 20px;
+    }
+
+    .demo-box ul,
+    .demo-box ol {
+      margin: 0;
+      padding-left: 22px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .status-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .status {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: #eef5ff;
+      color: #23466d;
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .sequence-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .sequence {
+      min-width: 1320px;
+      padding: 18px;
+    }
+
+    .actors {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .actor {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .actor:nth-child(2) { background: #0e7fab; }
+    .actor:nth-child(3) { background: var(--teal); }
+    .actor:nth-child(4) { background: var(--green); }
+    .actor:nth-child(5) { background: var(--orange); }
+    .actor:nth-child(6) { background: #9b6bc2; }
+    .actor:nth-child(7) { background: var(--red); }
+
+    .seq-row {
+      display: grid;
+      grid-template-columns: 70px repeat(7, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-height: 46px;
+      border-top: 1px dashed #e0e6ef;
+    }
+
+    .seq-no {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .seq-cell {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 8px;
+      border-radius: 6px;
+      color: #263244;
+      background: #f7f9fc;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .seq-cell.empty {
+      background: transparent;
+    }
+
+    .seq-cell.call {
+      background: #eaf3ff;
+      color: #174e82;
+    }
+
+    .seq-cell.async {
+      background: #eaf8f2;
+      color: #246b46;
+    }
+
+    .seq-cell.store {
+      background: #fff4e4;
+      color: #7a4b05;
+    }
+
+    .seq-cell.return {
+      background: #f7edf9;
+      color: #694579;
+    }
+
+    .seq-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .diagram-block {
+      margin-bottom: 20px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .diagram {
+      min-width: 1280px;
+      padding: 18px;
+    }
+
+    .diagram-title {
+      margin: 0 0 14px;
+      color: var(--blue);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .participants {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .participant {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .participant:nth-child(2) { background: #0e7fab; }
+    .participant:nth-child(3) { background: #1597a7; }
+    .participant:nth-child(4) { background: #4f9a4f; }
+    .participant:nth-child(5) { background: #e28a22; }
+    .participant:nth-child(6) { background: #9566bd; }
+    .participant:nth-child(7) { background: #b64b4b; }
+
+    .lifeline-area {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .lifeline {
+      grid-row: 1 / 40;
+      min-height: 560px;
+      border-left: 2px dashed #d8e1ee;
+      transform: translateX(50%);
+    }
+
+    .arrow-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      min-height: 42px;
+      align-items: center;
+    }
+
+    .message {
+      position: relative;
+      z-index: 2;
+      min-height: 30px;
+      padding: 0 12px;
+      border-top: 3px solid #2d6fa9;
+      color: #174e82;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .message::after {
+      content: "";
+      position: absolute;
+      right: -1px;
+      top: -7px;
+      border-left: 10px solid #2d6fa9;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .message.back {
+      border-top-color: #80579a;
+      color: #694579;
+    }
+
+    .message.back::after {
+      display: none;
+    }
+
+    .message.back::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: -7px;
+      border-right: 10px solid #80579a;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .message.async {
+      border-top-color: #2c8a5b;
+      color: #246b46;
+    }
+
+    .message.async::after {
+      border-left-color: #2c8a5b;
+    }
+
+    .message.store {
+      border-top-color: #c98014;
+      color: #7a4b05;
+    }
+
+    .message.store::after {
+      border-left-color: #c98014;
+    }
+
+    .message.self {
+      min-height: 32px;
+      border: 2px solid #d5e5fa;
+      border-radius: 8px;
+      background: #eef5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .message.self::after,
+    .message.self::before {
+      display: none;
+    }
+
+    .c1-2 { grid-column: 1 / 3; }
+    .c2-4 { grid-column: 2 / 5; }
+    .c4-2 { grid-column: 2 / 5; }
+    .c2-3 { grid-column: 2 / 4; }
+    .c2-5 { grid-column: 2 / 6; }
+    .c5-2 { grid-column: 2 / 6; }
+    .c5-6 { grid-column: 5 / 7; }
+    .c6-5 { grid-column: 5 / 7; }
+    .c6-4 { grid-column: 4 / 7; }
+    .c6-3 { grid-column: 3 / 7; }
+    .c6-7 { grid-column: 6 / 8; }
+    .c7-6 { grid-column: 6 / 8; }
+    .c2-7 { grid-column: 2 / 8; }
+    .c7-2 { grid-column: 2 / 8; }
+    .c2-6 { grid-column: 2 / 7; }
+    .c6-2 { grid-column: 2 / 7; }
+    .c3-2 { grid-column: 2 / 4; }
+    .c2-self { grid-column: 2 / 3; }
+    .c6-self { grid-column: 6 / 7; }
+    .c1-2-back { grid-column: 1 / 3; }
+
+    .diagram-note {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .compact-seq {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .seq-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .seq-panel h3 {
+      margin: 0;
+      padding: 14px 16px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .seq-panel:nth-child(2) h3 {
+      background: var(--teal);
+    }
+
+    .seq-steps {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      flex: 1;
+    }
+
+    .seq-step {
+      display: grid;
+      grid-template-columns: 118px 1fr 118px;
+      gap: 8px;
+      align-items: center;
+      min-height: 46px;
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .seq-step.front {
+      background: #f3f8ff;
+    }
+
+    .seq-step.compute {
+      background: #fff9e8;
+    }
+
+    .seq-party {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px;
+      border-radius: 7px;
+      color: #fff;
+      background: #1769aa;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .seq-party.api { background: #0e7fab; }
+    .seq-party.db { background: #1597a7; }
+    .seq-party.obj { background: #4f9a4f; }
+    .seq-party.mq { background: #e28a22; }
+    .seq-party.worker { background: #9566bd; }
+    .seq-party.vec { background: #b64b4b; }
+    .seq-party.emb { background: #5968b4; }
+
+    .seq-action {
+      position: relative;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 24px;
+      border-radius: 999px;
+      background: #eef5ff;
+      color: #174e82;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .seq-action::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 9px solid #2d6fa9;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+
+    .seq-action.back {
+      background: #f7edf9;
+      color: #694579;
+    }
+
+    .seq-action.back::after {
+      left: 10px;
+      right: auto;
+      border-left: 0;
+      border-right: 9px solid #80579a;
+    }
+
+    .seq-action.async {
+      background: #eaf8f2;
+      color: #246b46;
+      border: 2px dashed #2c8a5b;
+    }
+
+    .seq-action.async::after {
+      border-left-color: #2c8a5b;
+    }
+
+    .seq-action.store {
+      background: #fff4e4;
+      color: #7a4b05;
+    }
+
+    .seq-action.store::after {
+      border-left-color: #c98014;
+    }
+
+    .seq-action.self {
+      border-radius: 7px;
+      background: #fff0c7;
+      color: #755102;
+      border: 1px solid #e5bf54;
+    }
+
+    .seq-action.self::after {
+      display: none;
+    }
+
+    .seq-caption {
+      padding: 0 12px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .flow-board {
+      display: grid;
+      grid-template-columns: 0.9fr 1.05fr 1.05fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .flow-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .flow-panel h3 {
+      margin: 0;
+      padding: 12px 14px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .flow-panel.async h3 {
+      background: var(--orange);
+    }
+
+    .flow-panel.search h3 {
+      background: var(--teal);
+    }
+
+    .flow-list {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      flex: 1;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 34px 92px 28px 92px 1fr;
+      gap: 7px;
+      align-items: center;
+      min-height: 42px;
+      padding: 7px;
+      border-radius: 8px;
+      background: #f7f9fc;
+      border: 1px solid #e7edf6;
+    }
+
+    .flow-step.front {
+      background: #f3f8ff;
+      border-color: #d9e9ff;
+    }
+
+    .flow-step.async {
+      background: #effaf5;
+      border: 1px dashed #75b98f;
+    }
+
+    .flow-step.compute {
+      background: #fff8df;
+      border-color: #efd47c;
+    }
+
+    .flow-step.store {
+      background: #fff5e8;
+      border-color: #efcf9c;
+    }
+
+    .flow-no {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #213a5c;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .flow-role {
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #fff;
+      background: #1769aa;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .flow-role.api { background: #0e7fab; }
+    .flow-role.db { background: #1597a7; }
+    .flow-role.obj { background: #4f9a4f; }
+    .flow-role.mq { background: #e28a22; }
+    .flow-role.worker { background: #9566bd; }
+    .flow-role.vec { background: #b64b4b; }
+    .flow-role.emb { background: #5968b4; }
+
+    .flow-arrow {
+      color: #48627f;
+      font-size: 19px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .flow-action strong {
+      display: block;
+      color: #253041;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .flow-action span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .flow-note {
+      display: grid;
+      grid-template-columns: repeat(3, auto) 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .legend-chip::before {
+      content: "";
+      width: 18px;
+      height: 12px;
+      border-radius: 4px;
+      background: #f3f8ff;
+      border: 1px solid #d9e9ff;
+    }
+
+    .legend-chip.async::before {
+      background: #effaf5;
+      border: 1px dashed #75b98f;
+    }
+
+    .legend-chip.compute::before {
+      background: #fff8df;
+      border: 1px solid #efd47c;
+    }
+
+    .mermaid-board {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .mermaid-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .mermaid-card h3 {
+      margin: 0;
+      padding: 12px 14px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .mermaid-card:nth-child(2) h3 {
+      background: var(--teal);
+    }
+
+    .mermaid {
+      padding: 14px;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .mermaid-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      padding: 14px 26px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="canvas" aria-label="数据清洗与 RAG 服务 MVP 版本图">
+      <header>
+        <h1>数据清洗与 RAG 服务 MVP 版本</h1>
+        <div class="subtitle">目标：先跑通一条可演示、可追溯、可扩展的最小 RAG 数据闭环；MVP 只做基础粗排与候选规模控制</div>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">MVP 最小闭环</h2>
+        <div class="closed-loop">
+          <div class="loop-step">上传文档</div>
+          <div class="loop-step">保存元数据</div>
+          <div class="loop-step">异步清洗</div>
+          <div class="loop-step">文本切分</div>
+          <div class="loop-step">Embedding</div>
+          <div class="loop-step">向量入库</div>
+          <div class="loop-step">语义召回<br>基础粗排</div>
+          <div class="loop-step">返回来源片段</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">5 个实施阶段</h2>
+        <div class="mvp-grid">
+          <article class="phase">
+            <h3>Step 1<br>工程与基础设施</h3>
+            <ul>
+              <li>初始化 API 服务与 Worker 骨架</li>
+              <li>准备数据库、Redis、MQ、对象存储、向量库</li>
+              <li>定义统一配置与启动方式</li>
+              <li>确认服务间连通性</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <h3>Step 2<br>元数据与接口契约</h3>
+            <ul>
+              <li>设计 data_source、document、document_version</li>
+              <li>设计 cleaning_job、text_chunk、vector_record</li>
+              <li>定义文件上传、任务查询、检索 API</li>
+              <li>补充状态机和错误码</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <h3>Step 3<br>文件接入与清洗</h3>
+            <ul>
+              <li>上传文件保存到对象存储或本地目录</li>
+              <li>创建清洗任务并投递 MQ</li>
+              <li>Worker 消费任务并执行解析</li>
+              <li>输出清洗后的纯文本或结构化文本</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <h3>Step 4<br>切分与向量入库</h3>
+            <ul>
+              <li>按章节、段落和长度生成 chunk</li>
+              <li>绑定文档、版本、页码、章节元数据</li>
+              <li>调用 Embedding 适配层</li>
+              <li>写入向量库并记录 vector_record</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <h3>Step 5<br>语义检索闭环</h3>
+            <ul>
+              <li>提供检索 API</li>
+              <li>查询文本生成向量</li>
+              <li>向量库召回 TopK</li>
+              <li>基础粗排或分数融合控制候选规模</li>
+              <li>暂不接 Cross-Encoder 精排</li>
+              <li>返回片段、来源、分数和元数据</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">首期技术决策</h2>
+        <div class="matrix">
+          <div class="decision">
+            <strong>后端技术栈</strong>
+            <span>推荐 FastAPI 控制面 + Python Worker；统一 Python，API 与异步清洗解耦。</span>
+          </div>
+          <div class="decision">
+            <strong>向量库</strong>
+            <span>推荐 Qdrant 或 Milvus；小规模 MVP 可用 pgvector 快速验证。</span>
+          </div>
+          <div class="decision">
+            <strong>消息队列</strong>
+            <span>MVP 推荐 RabbitMQ；高吞吐流式场景再考虑 Kafka。</span>
+          </div>
+          <div class="decision">
+            <strong>文件存储</strong>
+            <span>推荐 MinIO；临时 MVP 可本地目录，但接口保留 object_uri。</span>
+          </div>
+          <div class="decision">
+            <strong>模型服务</strong>
+            <span>Embedding 必须抽象适配层，支持本地模型、企业平台或外部 API。</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section split">
+        <div>
+          <h2 class="section-title">MVP 范围</h2>
+          <div class="scope">
+            <div class="scope-card">
+              <h3>必须做</h3>
+              <ul>
+                <li>工程骨架和基础设施连通</li>
+                <li>元数据表和核心状态机</li>
+                <li>文件上传和任务查询</li>
+                <li>至少 2 类文档格式解析</li>
+                <li>文本切分、Embedding、向量入库</li>
+                <li>语义检索和基础粗排/候选截断</li>
+              </ul>
+            </div>
+            <div class="scope-card out">
+              <h3>暂不做</h3>
+              <ul>
+                <li>数据库同步和第三方系统集成</li>
+                <li>复杂 OCR 和音视频转写</li>
+                <li>完整后台管理页面</li>
+                <li>多轮问答编排</li>
+                <li>领域模型微调</li>
+                <li>业务干预：SimHash / MinHash 去重</li>
+                <li>业务干预：MMR / DPP 打散</li>
+                <li>Cross-Encoder 精排</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2 class="section-title">验收标准</h2>
+          <div class="scope-card">
+            <h3>可演示闭环</h3>
+            <ul>
+              <li>上传样例文档后任务可从 UPLOADED 流转到 INDEXED</li>
+              <li>检索问题可以召回目标文档片段</li>
+              <li>结果包含文档 ID、chunk ID、来源、分数和元数据</li>
+              <li>失败可定位到任务、文档版本和错误阶段</li>
+              <li>候选规模可配置，MVP 不接精排模型，也不允许为后续精排留下大候选直传路径</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">最小 MVP 时序图</h2>
+        <div class="mermaid-board">
+          <div class="mermaid-card">
+            <h3>A. 文档上传与异步入库</h3>
+            <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U as 用户/业务系统
+    participant API as FastAPI 控制面
+    participant DB as PostgreSQL 元数据
+    participant OBJ as MinIO 对象存储
+    participant MQ as RabbitMQ 队列
+    participant W as Python Worker
+    participant V as Qdrant 向量库
+
+    U->>API: 上传文件 POST /ingestions/files
+    API->>OBJ: 保存原始文件
+    OBJ-->>API: 返回 object_uri
+    API->>DB: 创建文档记录与清洗任务(PENDING)
+    API-->>MQ: 投递异步清洗任务(job_id)
+    API-->>U: 返回 job_id / PENDING
+
+    MQ-->>W: Worker 消费任务
+    W->>DB: 更新 RUNNING / PARSING
+    W->>OBJ: 读取原始文件
+    W->>W: 解析、清洗、切分
+    W->>W: 生成 Embedding
+    W->>V: 写入 chunk 向量
+    W->>DB: 写入 chunk/vector_record，更新 SUCCESS
+            </pre>
+          </div>
+
+          <div class="mermaid-card">
+            <h3>B. 语义检索与基础粗排</h3>
+            <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U as 用户/业务系统
+    participant API as FastAPI 控制面
+    participant E as Embedding 适配层
+    participant V as Qdrant 向量库
+    participant DB as PostgreSQL 元数据
+
+    U->>API: 发起检索 POST /rag/search
+    API->>E: 生成 query embedding
+    E-->>API: 返回 query vector
+    API->>V: 向量召回 recall_size 候选
+    V-->>API: 返回 chunk_id + score
+    API->>API: 基础粗排 / 候选截断(pre_rank/top_k)
+    API->>DB: 查询 chunk 文本、来源、元数据
+    DB-->>API: 返回可追溯信息
+    API-->>U: 返回片段、来源、分数、metadata
+            </pre>
+          </div>
+        </div>
+        <div class="mermaid-note">
+          Mermaid 约定：实线表示同步调用，虚线返回表示响应或异步投递结果。MVP 只做语义召回和基础粗排/候选截断，不接 Cross-Encoder 精排，也不做 SimHash/MinHash 去重和 MMR/DPP 打散。
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">近期 Demo 脚本</h2>
+        <div class="demo">
+          <div class="demo-box">
+            <h3>样例文档</h3>
+            <ul>
+              <li>企业制度文档</li>
+              <li>产品说明文档</li>
+              <li>FAQ 或客服知识文档</li>
+            </ul>
+          </div>
+          <div class="demo-box">
+            <h3>演示路径</h3>
+            <ol>
+              <li>上传样例文档</li>
+              <li>查看任务状态变化</li>
+              <li>输入业务问题</li>
+              <li>返回相关片段</li>
+              <li>展示片段来源、分数、文档 ID、chunk ID</li>
+            </ol>
+            <div class="status-flow">
+              <div class="status">UPLOADED</div>
+              <div class="status">CLEANING</div>
+              <div class="status">CHUNKING</div>
+              <div class="status">EMBEDDING</div>
+              <div class="status">INDEXED</div>
+            </div>
+          </div>
+          <div class="demo-box">
+            <h3>输出结果</h3>
+            <ul>
+              <li>内容片段</li>
+              <li>来源文档</li>
+              <li>页码 / 章节</li>
+              <li>相似度分数</li>
+              <li>chunk 元数据</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        MVP 原则：先保证端到端闭环跑通，并内置候选规模控制；关键词检索、去重、打散、Cross-Encoder 精排、多源接入和完整治理能力放到后续阶段。
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      sequence: {
+        mirrorActors: false,
+        showSequenceNumbers: true,
+        actorMargin: 56,
+        messageMargin: 38,
+        boxMargin: 8,
+        noteMargin: 8,
+        diagramMarginX: 18,
+        diagramMarginY: 12
+      },
+      themeVariables: {
+        fontFamily: "Microsoft YaHei, PingFang SC, Arial, sans-serif",
+        primaryColor: "#eef5ff",
+        primaryTextColor: "#1f2530",
+        primaryBorderColor: "#8db7e3",
+        actorBkg: "#1769aa",
+        actorTextColor: "#ffffff",
+        actorBorder: "#1769aa",
+        activationBkgColor: "#fff4e4",
+        activationBorderColor: "#e28a22",
+        signalColor: "#23466d",
+        signalTextColor: "#1f2530",
+        noteBkgColor: "#fff8df",
+        noteTextColor: "#1f2530",
+        noteBorderColor: "#efd47c"
+      }
+    });
+  </script>
+</body>
+</html>
