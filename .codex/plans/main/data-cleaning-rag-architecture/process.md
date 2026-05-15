@@ -2,9 +2,9 @@
 
 - 任务需求：基于用户提供的“数据清洗与 RAG 服务架构”图，先完成规划、需求分析、技术选型与设计。
 - 关键决策：主题命名为 `data-cleaning-rag-architecture`，版本使用 `docs/codex/v1`。
-- 当前阶段：等待确认。
+- 当前阶段：工程初始化前规划。
 - 已完成产物：requirements、design、plan、status、任务记录。
-- 剩余工作：等待用户确认技术栈、首期基础设施和 MVP 范围后进入工程初始化或细化专项设计。
+- 剩余工作：确认 Docker 可用性、`DASHSCOPE_API_KEY` 配置来源和首批解析格式后进入工程初始化。
 - 重要发现：仓库当前只有项目规则与 docs/codex/v1 骨架，没有业务代码和既有主题文档。
 
 ## 步骤列表
@@ -45,6 +45,12 @@
 - [v] 引用原始总体架构 PNG。
   - 当前产物：docs/codex/v1/assets/总体架构图.png 已存在，设计文档已优先引用该原图。
   - 下一步：后续设计说明以 PNG 原图为准，HTML 版仅作为可编辑备份。
+- [v] 进一步规划 MVP 开工计划。
+  - 当前产物：docs/codex/v1/plans/data-cleaning-rag-mvp-startup-plan.md。
+  - 下一步：确认 Docker、Embedding、首批解析格式后创建工程骨架。
+- [v] 确认 Embedding 模型来源。
+  - 当前产物：相关文档已调整为通义/阿里云百炼，默认 `text-embedding-v4`。
+  - 下一步：确认 `DASHSCOPE_API_KEY` 配置来源和调用配额。
 
 ## 研究发现
 

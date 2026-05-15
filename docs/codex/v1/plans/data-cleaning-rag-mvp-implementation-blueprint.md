@@ -23,7 +23,7 @@ MVP 闭环保持为：
 | 消息队列 | RabbitMQ | MVP 任务队列，后续可替换 Kafka |
 | 对象存储 | MinIO | 存原始文件和解析中间产物 |
 | 向量库 | Qdrant | MVP 部署较轻，过滤能力清晰；也可替换 Milvus/pgvector |
-| Embedding | 抽象适配层 | 可接本地模型、企业模型平台或外部 API |
+| Embedding | 通义/阿里云百炼 | 默认 `text-embedding-v4`，保留适配层支持后续替换 |
 
 ## 工程模块拆分
 
@@ -413,13 +413,15 @@ sequenceDiagram
 
 - 实现按段落和长度的 chunk 策略。
 - 生成 chunk 元数据。
-- 调用 Embedding 适配层。
+- 调用通义/阿里云百炼 Embedding 适配层。
+- 通过 `DASHSCOPE_API_KEY`、`EMBEDDING_MODEL` 配置模型调用。
 - 写入 Qdrant。
 - 写入 text_chunk 和 vector_record。
 
 验收：
 
 - 文档处理后有 chunk 和向量记录。
+- 能通过通义 Embedding 生成真实向量。
 - Qdrant 可以按向量召回 chunk。
 
 ### M6：语义检索与基础粗排
@@ -489,5 +491,5 @@ sequenceDiagram
 1. 默认方案调整为：FastAPI 控制面 + Python Worker。
 2. 向量库是否使用 Qdrant 作为 MVP 默认实现。
 3. 本地开发是否允许 Docker Compose。
-4. Embedding 是否先接外部 API，还是需要本地模型。
+4. Embedding 已确定使用通义/阿里云百炼，默认 `text-embedding-v4`；仍需确认 `DASHSCOPE_API_KEY` 配置来源。
 5. MVP 首批解析格式是否定为 PDF、Word、CSV。
