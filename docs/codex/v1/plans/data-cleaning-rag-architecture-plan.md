@@ -9,7 +9,7 @@
 - 确认首期技术栈：统一 Python，FastAPI 控制面 + Python Worker。
 - 确认基础设施可用性：关系库、对象存储、Redis、消息队列、向量库、模型服务。
 - 确认首批数据源和文件格式优先级。
-- 模型调用方式：MVP Embedding 使用通义/阿里云百炼，默认 `text-embedding-v4`。
+- 模型调用方式：MVP Embedding 采用兼容适配层，线上通义 text-embedding，本地 BGE。
 - 确认权限模型：无权限、租户级、文档级、段落级。
 
 ## 阶段 0：选型验证

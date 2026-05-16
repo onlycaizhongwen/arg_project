@@ -80,7 +80,7 @@
 
 推荐：
 
-- Embedding 服务抽象为统一接口，MVP 默认接入通义/阿里云百炼 `text-embedding-v4`，并配置化支持 `text-embedding-v3` 或 mock embedding 兜底。
+- Embedding 服务抽象为统一兼容接口，MVP 支持线上通义 text-embedding、本地 BGE 和 mock embedding 兜底。通过 `EMBEDDING_PROVIDER`、`EMBEDDING_MODEL`、`EMBEDDING_DIMENSION`、`DASHSCOPE_API_KEY`、`EMBEDDING_BASE_URL` 切换实现。
 - 粗排模型和重排模型独立部署或以插件方式接入，检索链路设置超时、降级和熔断。
 - 质量校验模型先预留接口，v1 以规则校验为主。
 
@@ -362,7 +362,7 @@
 - 首期采用统一 Python 技术栈：FastAPI 控制面 + Python Worker。
 - 向量库最终选型：Milvus、Qdrant、pgvector 或企业已有平台。
 - 是否必须私有化部署模型。
-- MVP Embedding 已确定使用通义/阿里云百炼，需要确认 `DASHSCOPE_API_KEY` 的配置来源与调用配额。
+- MVP Embedding 已确定采用兼容适配层：线上通义 text-embedding、本地 BGE；需要确认 `DASHSCOPE_API_KEY`、本地 BGE 服务地址和向量维度。
 - 粗排阶段采用训练模型还是先使用向量内积和规则融合。
 - 首期是否需要 Elasticsearch/OpenSearch。
 - 是否存在文档级或段落级权限要求。

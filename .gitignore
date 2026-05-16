@@ -1,6 +1,8 @@
 .ai/logs/
 *.log
 __pycache__/
+.venv/
+*.egg-info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

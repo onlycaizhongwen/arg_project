@@ -1,0 +1,27 @@
+[
+  {
+    "id": "q1-local-bge-qdrant",
+    "query": "How does the MVP use local_bge bge-m3 and Qdrant?",
+    "expected_keywords": ["local_bge", "bge-m3", "Qdrant"]
+  },
+  {
+    "id": "q2-worker-retry",
+    "query": "What happens when the Worker fails and retry_count is below the max retries?",
+    "expected_keywords": ["retry_count", "RETRYING", "RabbitMQ"]
+  },
+  {
+    "id": "q3-rerank-boundary",
+    "query": "Why does the MVP not send huge candidates to a Cross-Encoder reranker?",
+    "expected_keywords": ["Cross-Encoder", "rerank_enabled", "false"]
+  },
+  {
+    "id": "q4-knowledge-filter",
+    "query": "Which payload fields are written to Qdrant for knowledge base filtering?",
+    "expected_keywords": ["knowledge_base_id", "tenant_id", "document_id"]
+  },
+  {
+    "id": "q5-candidate-limits",
+    "query": "Which request parameters bound the semantic recall candidate set?",
+    "expected_keywords": ["recall_size", "pre_rank_size", "top_k"]
+  }
+]

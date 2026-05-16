@@ -1,0 +1,8 @@
+RAG MVP smoke document.
+
+This file verifies upload, object storage, queue delivery, worker parsing,
+cleaning, paragraph chunking, mock embedding, vector storage, and semantic
+search.
+
+The service supports a funnel from recall to lightweight pre-ranking before
+future rerank and business intervention stages.

@@ -2,10 +2,10 @@
 
 - 任务需求：基于用户提供的“数据清洗与 RAG 服务架构”图，先完成规划、需求分析、技术选型与设计。
 - 关键决策：主题命名为 `data-cleaning-rag-architecture`，版本使用 `docs/codex/v1`。
-- 当前阶段：工程初始化前规划。
-- 已完成产物：requirements、design、plan、status、任务记录。
-- 剩余工作：确认 Docker 可用性、`DASHSCOPE_API_KEY` 配置来源和首批解析格式后进入工程初始化。
-- 重要发现：仓库当前只有项目规则与 docs/codex/v1 骨架，没有业务代码和既有主题文档。
+- 当前阶段：阶段 4 P4-5 异常迹象与监控指标已完成，下一步进入 P4-3 批量治理任务。
+- 已完成产物：requirements、design、plan、status、任务记录、API/Worker 骨架、本地基础设施配置、数据库初始化脚本、上传入库与 Worker 消费处理代码、Qdrant 检索接口代码、infra 运行说明、自动化冒烟脚本、可选 BGE reranker 服务与验证脚本。
+- 剩余工作：推进批量治理和生产模型评测。
+- 重要发现：仓库已具备统一 Python 技术栈骨架，Embedding 采用线上通义、本地 BGE、mock 兜底的兼容适配策略；本地 BGE rerank 已可用，但镜像站预热和镜像体积还需后续优化。
 
 ## 步骤列表
 
@@ -51,12 +51,167 @@
 - [v] 确认 Embedding 模型来源。
   - 当前产物：相关文档已调整为通义/阿里云百炼，默认 `text-embedding-v4`。
   - 下一步：确认 `DASHSCOPE_API_KEY` 配置来源和调用配额。
+- [v] 调整为兼容 Embedding 模型策略。
+  - 当前产物：相关文档已调整为线上通义 text-embedding、本地 BGE、mock 兜底的统一适配层。
+  - 下一步：确认线上 `DASHSCOPE_API_KEY`、本地 BGE 服务地址、模型名称和向量维度。
+- [v] 规划工程初始化执行计划。
+  - 当前产物：docs/codex/v1/plans/data-cleaning-rag-engineering-init-plan.md。
+  - 下一步：确认 Docker Compose、PDF+CSV 解析范围、BGE 服务地址后进入编码。
+- [v] 创建 MVP 工程初始化骨架。
+  - 当前产物：services/api、services/worker、infra/docker-compose.yml、infra/db/init.sql、.env.example、samples 占位目录。
+  - 验证结果：已通过 `python -m compileall services/api/app services/worker/app`、API/Worker 最小导入、`docker compose -f infra/docker-compose.yml config`。
+  - 下一步：实现文件上传入库与 RabbitMQ 投递链路，补齐 MinIO bucket 初始化和 PostgreSQL 写入逻辑。
+- [v] 实现首条文件上传入库与 Worker 消费链路。
+  - 当前产物：API 端已实现上传文件写 MinIO、写 PostgreSQL、投递 RabbitMQ；Worker 端已实现消费消息、下载文件、解析 TXT/MD/CSV/PDF、清洗切块、Embedding、写 Qdrant 和更新 job 状态。
+  - 验证结果：已通过 Python 语法编译和 Docker Compose 配置解析；导入验证因当前全局 Python 未安装 `minio`、`pika` 等项目依赖而中止；Docker 镜像构建因 Docker Desktop 守护进程未运行而中止。
+  - 下一步：启动 Docker Desktop 后执行 `docker compose -f infra/docker-compose.yml up -d`，再构建 API/Worker 镜像并发起一次样例文件上传联调。
+- [v] 实现语义检索接口最小链路。
+  - 当前产物：API 端已新增 query embedding、Qdrant `query_points` 召回、PostgreSQL `text_chunk` 回查和结果组装逻辑；Docker Compose 已加入 `api` 与 `worker` 服务。
+  - 验证结果：已通过 Python 编译、Docker Compose 配置解析、`.venv` 依赖安装、API `/health` 本地调用、Worker 解析/清洗/切块/mock embedding 最小行为验证。
+  - 下一步：Docker Hub 当前拉取 `python:3.12-slim` 超时，需要配置镜像源或网络后继续 `docker compose build api worker` 与端到端联调。
+- [v] 配置国内镜像源并完成 Docker 端到端冒烟。
+  - 当前产物：Dockerfile 与 Compose 默认使用 `docker.m.daocloud.io` 镜像源；新增 `infra/README.md` 记录启动和 smoke test 命令；Qdrant 镜像升级到 `v1.18.0` 与 Python client 对齐。
+  - 验证结果：`docker compose build api worker` 成功；`docker compose up -d` 成功；上传 `samples/documents/smoke.txt` 成功；job `44250239-c6cd-4685-a0bb-37d17e4f12e7` 达到 `SUCCEEDED`；检索接口返回 3 条结果。
+  - 下一步：进入工程增强阶段，优先补幂等、失败重试、错误码、配置校验和自动化集成测试。
+- [v] 补充自动化冒烟与 Worker 基础幂等。
+  - 当前产物：新增 `scripts/smoke-test.ps1`；Worker 对已 `SUCCEEDED` 的重复消息直接跳过；chunk ID 改为按 `document_version_id + chunk_index` 稳定生成；`text_chunk` 与 `vector_record` 写入改为 upsert。
+  - 验证结果：`scripts/smoke-test.ps1` 通过，生成 job `fa43e36b-ed4a-41e6-ae1f-626ef8ebf200` 并检索返回 3 条结果；手动重复调用同一 job 处理逻辑后状态保持 `SUCCEEDED`。
+  - 下一步：补 API/Worker 统一错误码、配置启动校验和失败重试策略。
+- [v] 补充统一错误响应、配置校验和失败重试计数。
+  - 当前产物：API 新增 `AppError` 统一错误结构；API/Worker 启动时校验关键配置；`cleaning_job` 增加 `retry_count`；Worker 失败时递增重试次数并按 `WORKER_MAX_RETRIES` 决定是否重新入队。
+  - 验证结果：已对当前 Postgres 开发库执行 `ALTER TABLE cleaning_job ADD COLUMN IF NOT EXISTS retry_count INTEGER NOT NULL DEFAULT 0`；API/Worker 编译通过；Compose 配置解析通过；重建 API/Worker 成功；`scripts/smoke-test.ps1` 通过；不存在 job 返回 `{"error":{"code":"JOB_NOT_FOUND","message":"Job not found"}}`。
+  - 下一步：补正式迁移机制，避免以后依赖手工 `ALTER TABLE`；再进入 DashScope/BGE 联调和 trace 审查。
+- [v] 引入 Alembic 正式迁移机制。
+  - 当前产物：API 依赖新增 Alembic；API 镜像复制 `alembic.ini` 与 `migrations`；新增 `0001_initial`、`0002_retry_count` 迁移；新增 `scripts/db-migrate.ps1`；`infra/README.md` 补充迁移命令。
+  - 验证结果：首次迁移因 revision id 超过 Alembic 默认 32 字符限制失败，已缩短为 `0001_initial` 和 `0002_retry_count`；重建 API 镜像后 `scripts/db-migrate.ps1` 成功，`alembic_version=0002_retry_count`；`scripts/smoke-test.ps1` 通过。
+  - 下一步：联调真实 DashScope/BGE，并补 trace 审查确认 requirements/design/plan/implementation 一致。
+- [v] 增强 Embedding provider 切换与验证。
+  - 当前产物：API/Worker DashScope 适配补充 `output_type=dense`；API query 使用 `text_type=query`，Worker 文档入库使用 `text_type=document`；Compose 支持通过环境变量切换 `EMBEDDING_PROVIDER`、`EMBEDDING_MODEL`、`EMBEDDING_DIMENSION`、`DASHSCOPE_API_KEY`、`EMBEDDING_BASE_URL`；新增 `scripts/embedding-check.ps1`。
+  - 验证结果：参考阿里云 DashScope 官方文档确认 `text-embedding-v4`、国内同步接口地址、`output_type` 和 `text_type` 参数；API/Worker 编译通过；Compose 配置解析通过；重建 API/Worker 成功；`scripts/embedding-check.ps1` 在 mock provider 下通过；`scripts/smoke-test.ps1` 通过。
+  - 下一步：需要真实 `DASHSCOPE_API_KEY` 或本地 BGE OpenAI-compatible 服务地址，才能继续做真实模型调用联调。
+- [v] 使用本地 BGE 验证真实 Embedding 链路。
+  - 当前产物：Ollama 已拉取 `bge-m3`；`infra/README.md` 已补充 Ollama 本地 BGE 配置。
+  - 验证结果：`http://localhost:11434/v1/embeddings` 返回 1024 维向量；Compose 使用 `EMBEDDING_PROVIDER=local_bge`、`EMBEDDING_MODEL=bge-m3`、`EMBEDDING_BASE_URL=http://host.docker.internal:11434` 重建 API/Worker 后，`scripts/embedding-check.ps1` 通过，`scripts/smoke-test.ps1` 通过，job `b64e5eed-c924-427b-95b9-d22b5c8afb2a` 达到 `SUCCEEDED` 并返回 3 条检索结果。
+  - 下一步：补 trace 审查，或继续联调线上 DashScope `text-embedding-v4`。
+- [v] 补充 MVP 主链路 trace 审查。
+  - 当前产物：`docs/codex/v1/trace/data-cleaning-rag-architecture-trace.md`。
+  - 审查结论：当前实现已达到“MVP 主链路可运行”，但还不能标记为完整 v1 完成；P0 收口项为 Demo 样例、接口文档、检索质量验证、异常场景验证、知识库过滤行为确认。
+  - 下一步：优先完成 P0 收口项，使 MVP 具备演示、交接和验收能力。
+- [v] 补齐知识库过滤行为。
+  - 当前产物：上传接口新增 `knowledge_base_id`；新增 `0003_knowledge_base` 迁移；document/text_chunk 增加 `knowledge_base_id`；Worker 写入 Qdrant payload；检索按 `knowledge_base_ids` 过滤；`scripts/smoke-test.ps1` 增加负向过滤验证。
+  - 验证结果：Python 编译通过；Compose 配置解析通过；API/Worker 镜像重建成功；Alembic 升级到 `0003_knowledge_base`；`scripts/smoke-test.ps1` 通过，job `08131054-4022-438d-9440-7ddfcc375fc1` 达到 `SUCCEEDED`，错误知识库返回 0 条。
+  - 下一步：继续补 Demo 样例、接口文档、检索质量验证和异常场景验证。
+- [v] 补充 Demo 样例和最小检索质量验证。
+  - 当前产物：`samples/documents/demo/rag-pipeline-mvp.md`、`samples/documents/demo/worker-retry-policy.md`、`samples/documents/demo/retrieval-funnel-boundary.md`、`samples/queries/demo-queries.json`、`scripts/demo-eval.ps1`。
+  - 验证结果：`scripts/demo-eval.ps1` 通过；上传 3 份 Demo 文档到 `kb-demo`，5 条查询全部命中预期关键词。
+  - 下一步：补 API 契约文档和异常场景验证。
+- [v] 补充 API 契约文档。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-api-contract.md`。
+  - 内容范围：健康检查、文件上传、任务查询、RAG 检索、统一错误响应、冒烟脚本、Demo 评测脚本和 MVP 当前边界。
+  - 下一步：补异常场景验证。
+- [v] 补充异常场景验证。
+  - 当前产物：`scripts/failure-test.ps1`；API 上传空文件新增 `EMPTY_FILE` 错误。
+  - 验证结果：`scripts/failure-test.ps1` 通过，覆盖 `JOB_NOT_FOUND`、`VALIDATION_ERROR`、`EMPTY_FILE` 和不支持格式异步失败；随后 `scripts/smoke-test.ps1` 与 `scripts/demo-eval.ps1` 均通过。
+  - 下一步：MVP P0 已收口，可进入线上 DashScope 联调或阶段 2 增强规划。
+- [v] 进入阶段 2 并产出实施计划。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase2-plan.md`。
+  - 关键决策：阶段 2 首版不新增 ES/OpenSearch，先用 PostgreSQL 全文检索实现关键词召回；混合召回采用 RRF；业务干预先做轻量去重、文档限额和 MMR；重排先做兼容接口和降级。
+  - 下一步：实现 P2-1 搜索契约升级和 P2-2 PostgreSQL 关键词召回。
+- [v] 实现 P2-1 搜索契约升级和 P2-2 PostgreSQL 关键词召回。
+  - 当前产物：`search_mode=semantic|keyword|hybrid`；搜索响应新增 `recall_sources`、`semantic_score`、`keyword_score`、`pre_rank_score`、候选计数；新增 `0004_chunk_fts` 全文索引迁移；新增 `scripts/phase2-eval.ps1`。
+  - 验证结果：Python 编译通过；Compose 配置解析通过；API 镜像重建成功；Alembic 升级到 `0004_chunk_fts`；`scripts/phase2-eval.ps1` 通过，5 个 query × 3 种模式共 15 个检查全部通过，hybrid 均包含 keyword 来源；`scripts/smoke-test.ps1`、`scripts/demo-eval.ps1`、`scripts/failure-test.ps1` 均通过。
+  - 下一步：实现 P2-3 RRF 粗排细化与 P2-4 业务干预去重/打散。
+- [v] 实现 P2-3 RRF 粗排细化与 P2-4 业务干预去重/打散。
+  - 当前产物：搜索请求新增 `dedup_enabled`、`diversity_enabled`、`max_chunks_per_document`；候选在 `pre_rank_size` 后执行内容去重、同文档版本限额和 MMR 简化打散；`search_plan` 输出 `dedup_removed_count` 和 `document_limit_removed_count`。
+  - 验证结果：Python 编译通过；Compose 配置解析通过；API 镜像重建成功；`scripts/phase2-eval.ps1` 通过，15 个检查全部通过，`document_limit_violation_count=0`；`scripts/smoke-test.ps1`、`scripts/demo-eval.ps1`、`scripts/failure-test.ps1` 均通过。
+  - 下一步：实现 P2-5 重排接口与降级，或先做 P2-6 权限治理字段。
+- [v] 实现 P2-5 重排接口与降级。
+  - 当前产物：`services/api/app/rerank/rerank_client.py`、搜索请求 `rerank_enabled/rerank_size`、响应 `rerank_score/rerank_provider/rerank_degraded`、`scripts/rerank-degrade-test.ps1`。
+  - 验证结果：Python 编译、Compose 配置、API 镜像构建、`phase2/smoke/demo/failure` 均通过；external provider 指向不可用地址时 `scripts/rerank-degrade-test.ps1` 通过，随后已切回 `RERANK_PROVIDER=mock` 并复测 phase2 通过。
+  - 下一步：实现 P2-6 权限治理字段。
+- [v] 实现 P2-6 权限治理字段。
+  - 当前产物：上传接口新增 `permission_tags`，MQ/Worker/Qdrant payload 透传权限标签，搜索请求新增 `permission_context`，PostgreSQL 迁移 `0005_permission_tags`，验证脚本 `scripts/permission-test.ps1`。
+  - 验证结果：Python 编译通过；Compose 配置通过；API/Worker 镜像构建通过；Alembic 升级到 `0005_permission_tags`；`scripts/permission-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1`、`scripts/demo-eval.ps1`、`scripts/failure-test.ps1`、`scripts/rerank-degrade-test.ps1` 均通过。
+  - 下一步：补阶段 2 trace 审查，并规划阶段 3 文档更新/删除/索引重建。
+  - 涉及文件：`services/api/app/api/ingestion.py`、`services/api/app/api/search.py`、`services/api/app/services/ingestion_service.py`、`services/api/app/services/search_service.py`、`services/worker/app/consumers/cleaning_consumer.py`、`services/api/migrations/versions/0005_add_permission_tags.py`。
+- [v] 补阶段 2 trace 审查。
+  - 当前产物：`docs/codex/v1/trace/data-cleaning-rag-phase2-trace.md`。
+  - 审查结论：阶段 2 首版功能闭环完成；剩余风险集中在真实重排、中文关键词、完整权限体系、禁用/时效/质量过滤和索引生命周期。
+  - 下一步：规划阶段 3，建议从文档更新/删除/索引重建开始。
+- [v] 规划阶段 3 索引生命周期。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase3-plan.md`。
+  - 下一步：实现 P3-1 文档删除与不可见过滤。
+- [v] 实现 P3-1 文档删除与不可见过滤。
+  - 当前产物：新增 `DELETE /api/v1/documents/{document_id}`，搜索结果返回 `document_id`，搜索回查过滤已删除 document/version，删除接口软删除 PostgreSQL 元数据并删除 Qdrant 向量点。
+  - 验证结果：Python 编译通过；Compose 配置通过；API/Worker 镜像构建通过；Alembic 升级到 `0006_deleted_at`；`scripts/document-delete-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1`、`scripts/demo-eval.ps1`、`scripts/failure-test.ps1`、`scripts/permission-test.ps1`、`scripts/rerank-degrade-test.ps1` 均通过。
+  - 下一步：实现 P3-2 文档更新与新版本可见性。
+  - 涉及文件：`services/api/app/api/documents.py`、`services/api/app/services/document_service.py`、`services/api/app/services/search_service.py`、`services/worker/app/consumers/cleaning_consumer.py`、`services/api/migrations/versions/0006_add_document_deleted_at.py`、`scripts/document-delete-test.ps1`。
+- [v] 实现 P3-2 文档更新与新版本可见性。
+  - 当前产物：新增 `PUT /api/v1/documents/{document_id}/versions`，创建新 document_version 和清洗 job；Worker 成功处理新版本后将旧 `INDEXED` 版本标记为 `SUPERSEDED`；检索只返回 `document.status='INDEXED'` 且 `document_version.status='INDEXED'` 的 chunk。
+  - 验证结果：`scripts/document-update-test.ps1` 通过；`scripts/phase2-eval.ps1`、`scripts/document-delete-test.ps1`、`scripts/smoke-test.ps1`、`scripts/demo-eval.ps1`、`scripts/failure-test.ps1`、`scripts/permission-test.ps1`、`scripts/rerank-degrade-test.ps1` 均通过。
+  - 下一步：实现 P3-3 按 document_id 索引重建。
+  - 涉及文件：`services/api/app/api/documents.py`、`services/api/app/services/document_service.py`、`services/api/app/services/search_service.py`、`services/worker/app/consumers/cleaning_consumer.py`、`scripts/document-update-test.ps1`。
+- [v] 验证真实本地 BGE 重排链路。
+  - 当前产物：新增 `services/reranker` FastAPI 服务、Compose 可选 profile `reranker`、`scripts/bge-rerank-test.ps1`，并补充 `infra/README.md` 与 API 契约文档。
+  - 验证结果：`scripts/bge-rerank-test.ps1` 通过；使用 Ollama `bge-m3` 做 embedding，`BAAI/bge-reranker-base` 做 external rerank，返回 `rerank_provider=external`、`rerank_degraded=false`、`rerank_score_count=5`。
+  - 重要发现：`hf-mirror.com` 在当前 Hugging Face 客户端下触发 metadata 错误；切换 `HF_ENDPOINT=https://huggingface.co` 可完成模型预热，预热后测试通过。后续可优化 reranker 镜像，避免默认 PyTorch 拉取 CUDA 依赖导致镜像过重。
+  - 下一步：恢复默认开发配置到 `RERANK_PROVIDER=mock`，然后继续 P3-3 索引重建。
+  - 涉及文件：`services/reranker/app/main.py`、`services/reranker/Dockerfile`、`services/reranker/pyproject.toml`、`infra/docker-compose.yml`、`scripts/bge-rerank-test.ps1`、`infra/README.md`、`docs/codex/v1/plans/data-cleaning-rag-api-contract.md`。
+- [v] 实现 P3-3 按 document_id 索引重建。
+  - 当前产物：新增 `POST /api/v1/documents/{document_id}/rebuild`；重建复用当前 `INDEXED` 版本的原始 `object_key`，创建新的 cleaning job，不创建新版本；Worker 支持 `rebuild=true`，成功后清理本次未再生成的旧 chunk/vector；新增 `scripts/document-rebuild-test.ps1`。
+  - 验证结果：Python 编译通过；Compose 配置通过；API/Worker 镜像构建并启动成功；`scripts/document-rebuild-test.ps1`、`scripts/document-update-test.ps1`、`scripts/document-delete-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1` 均通过。
+  - 下一步：实现 P3-4 治理与审计增强。
+  - 涉及文件：`services/api/app/api/documents.py`、`services/api/app/services/document_service.py`、`services/worker/app/consumers/cleaning_consumer.py`、`scripts/document-rebuild-test.ps1`、`docs/codex/v1/plans/data-cleaning-rag-api-contract.md`、`docs/codex/v1/plans/data-cleaning-rag-phase3-plan.md`。
+- [v] 实现 P3-4 最小治理审计。
+  - 当前产物：新增 `document_audit_event` 表和 `0007_audit_event` 迁移；文档更新、重建、删除接口支持 `actor_id` 与 `request_source`；新增 `GET /api/v1/documents/{document_id}/audit` 和 `scripts/document-audit-test.ps1`。
+  - 验证结果：Python 编译通过；Compose 配置通过；API 镜像构建成功；Alembic 升级到 `0007_audit_event`；`scripts/document-audit-test.ps1`、`scripts/document-rebuild-test.ps1`、`scripts/document-update-test.ps1`、`scripts/document-delete-test.ps1`、`scripts/smoke-test.ps1` 均通过。
+  - 下一步：补阶段 3 trace 审查。
+  - 涉及文件：`services/api/migrations/versions/0007_add_document_audit_event.py`、`services/api/app/api/documents.py`、`services/api/app/services/document_service.py`、`scripts/document-audit-test.ps1`、`docs/codex/v1/plans/data-cleaning-rag-api-contract.md`、`docs/codex/v1/plans/data-cleaning-rag-phase3-plan.md`。
+- [v] 补阶段 3 trace 审查。
+  - 当前产物：`docs/codex/v1/trace/data-cleaning-rag-phase3-trace.md`。
+  - 审查结论：阶段 3 首版功能闭环完成；文档删除、更新、重建、最小审计已对齐计划，且阶段 2 检索漏斗和 MVP 主链路回归通过。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts/phase2-eval.ps1`、`scripts/document-audit-test.ps1`、`scripts/document-rebuild-test.ps1`、`scripts/document-update-test.ps1`、`scripts/document-delete-test.ps1`、`scripts/permission-test.ps1`、`scripts/failure-test.ps1`、`scripts/smoke-test.ps1` 均通过。
+  - 下一步：进入阶段 4 规划，重点补 document 级并发控制、批量重建/删除、失败补偿、完整审计和真实模型评测。
+- [v] 规划阶段 4 生产可控性。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase4-plan.md`。
+  - 规划范围：document 级并发控制、失败补偿与人工重试、批量治理任务、完整审计增强、异常迹象与监控指标、生产模型评测。
+  - 关键决策：优先实现 P4-1 文档级并发控制，因为它是批量治理、重试补偿和审计可信的基础。
+  - 下一步：实现 P4-1，增加 document 操作锁字段，并在更新、删除、重建入口及 Worker 完成/失败路径中维护锁状态。
+- [v] 实现 P4-1 文档级并发控制。
+  - 当前产物：`services/api/migrations/versions/0008_add_document_operation_lock.py`、`scripts/document-operation-lock-test.ps1`。
+  - 实现内容：`document` 增加 `operation_status`、`operation_lock_id`、`operation_started_at`；文档更新和重建使用 job_id 持锁，Worker 成功或最终失败后释放锁；删除操作同步持锁并在删除完成后清理锁字段；锁冲突返回 `DOCUMENT_OPERATION_IN_PROGRESS` 并记录 `DOCUMENT_OPERATION_REJECTED` 审计。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts\db-migrate.ps1`、`scripts/document-operation-lock-test.ps1`、`scripts/document-update-test.ps1`、`scripts/document-rebuild-test.ps1`、`scripts/document-delete-test.ps1`、`scripts/document-audit-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1` 均通过；阶段 2 评测需使用 `EMBEDDING_PROVIDER=local_bge` 和 `RERANK_PROVIDER=mock` 开发基线。
+  - 下一步：实现 P4-2 失败补偿与人工重试，新增按 failed job 创建 retry job 的接口和验证脚本。
+- [v] 实现 P4-2 失败补偿与人工重试。
+  - 当前产物：`services/api/migrations/versions/0009_add_cleaning_job_retry_link.py`、`POST /api/v1/jobs/{job_id}/retry`、`scripts/job-retry-test.ps1`。
+  - 实现内容：`cleaning_job` 增加 `retry_of_job_id`；仅允许 `FAILED` job 创建新的 retry job；retry job 复用原 `document_version` 和 `object_key`，投递 Worker 重新处理；写入 `JOB_RETRY_REQUESTED` 审计事件；非失败 job 重试返回 `JOB_NOT_FAILED`。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts\db-migrate.ps1`、`scripts/job-retry-test.ps1`、`scripts/document-operation-lock-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1` 均通过。
+  - 下一步：实现 P4-4 完整审计增强，补 Worker 成功/失败、重建结果、删除成功等执行结果审计。
+- [v] 实现 P4-4 完整审计增强。
+  - 当前产物：上传、更新、重建、重试 MQ 消息补充 `operation`；Worker 成功写入 `DOCUMENT_VERSION_INDEXED`、`DOCUMENT_INDEX_REBUILD_SUCCEEDED` 或 `JOB_RETRY_SUCCEEDED`，最终失败写入 `DOCUMENT_VERSION_INDEX_FAILED`、`DOCUMENT_INDEX_REBUILD_FAILED` 或 `JOB_RETRY_FAILED`；删除完成写入 `DOCUMENT_DELETE_SUCCEEDED`；审计查询支持 `operation` 过滤。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts\db-migrate.ps1`、`scripts/document-audit-test.ps1`、`scripts/job-retry-test.ps1`、`scripts/document-operation-lock-test.ps1`、`scripts/phase2-eval.ps1`、`scripts/smoke-test.ps1` 均通过。
+  - 下一步：实现 P4-5 异常迹象与监控指标，先输出 job 积压、失败率、锁滞留、rerank 降级等最小可观测口径。
+- [v] 实现 P4-5 异常迹象与监控指标。
+  - 当前产物：`services/api/migrations/versions/0010_add_search_diagnostic_event.py`、`GET /api/v1/diagnostics/overview`、`scripts/diagnostics-test.ps1`。
+  - 实现内容：新增 `search_diagnostic_event` 表记录 `RERANK_DEGRADED`；诊断概览汇总 cleaning job 状态/失败率、RabbitMQ ready/consumer、document 操作锁滞留、rerank provider 与近期降级次数，并输出 `JOB_BACKLOG`、`JOB_FAILURES_RECENT`、`DOCUMENT_LOCK_STALE`、`RERANK_DEGRADED` 等统一 signals。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts\db-migrate.ps1`、`scripts/diagnostics-test.ps1`、`scripts/rerank-degrade-test.ps1`、`scripts/smoke-test.ps1`、`scripts/phase2-eval.ps1` 均通过；`scripts/phase2-eval.ps1` 已改为默认使用唯一知识库，避免固定 `kb-phase2` 多轮污染。
+  - 下一步：实现 P4-3 批量治理任务，先做批量重建计划、item 拆分、状态查询和统计输出。
 
 ## 研究发现
 
 - 架构图覆盖业务应用、数据资产管理、多源异构接入、智能清洗、语义切分与向量化、向量存储与索引优化、RAG 检索服务、计算存储基础设施、模型与算法服务、横向治理能力。
 - 当前阶段适合先定义平台级边界，再拆出 MVP：文件/API 接入、清洗流水线、向量化入库、语义/混合检索、重排、基础管理与监控。
+- MVP 工程骨架已具备继续编码的入口：API 负责上传、任务查询、检索接口；Worker 负责清洗消费、解析、清洗、切块、Embedding 与向量入库。
+- 首条上传处理链路已经从占位返回改为真实依赖 MinIO/PostgreSQL/RabbitMQ/Qdrant；当前最需要端到端验证运行环境，而不是继续扩大功能面。
+- 当前 `qdrant-client` 版本为 1.18，API 检索端需要使用 `query_points()`，不能使用旧版 `search()`。
+- API 与 Worker 都使用顶层包名 `app`，本地同一虚拟环境导入时需要设置 `PYTHONPATH` 指向对应服务；容器内两者分开构建运行，不受影响。
+- Docker Hub 直连不稳定时，`docker.m.daocloud.io` 可用于本项目基础镜像、PostgreSQL、RabbitMQ、MinIO、Qdrant 的拉取。
+- 本地 BGE 可通过 Ollama 暴露 OpenAI-compatible `/v1/embeddings`，容器内访问宿主机地址应使用 `http://host.docker.internal:11434`，不能使用 `localhost:11434`。
 
 ## 错误记录
 
-- 暂无。
+- 2026-05-15：本机全局 Python 未安装项目依赖，直接导入 API/Worker 失败，缺少 `minio`、`pika`；应通过容器或独立虚拟环境验证。
+- 2026-05-15：Docker Desktop 守护进程未运行，`docker build` 无法连接 `docker_engine`，镜像构建验证需待 Docker 启动后重试。
+- 2026-05-16：Docker Desktop 已启动，但 Docker Hub 授权接口连接超时，`docker compose build api worker` 拉取 `python:3.12-slim` 失败；需要配置 Docker 镜像源或恢复网络后重试。
+- 2026-05-16：Qdrant 从 1.12.6 升级到 1.18.0 时旧 smoke-test vector volume 不兼容，已仅重建 `infra_qdrant-data` 本地开发卷并重新上传样例生成向量。
+- 2026-05-16：Alembic `version_num` 默认 32 字符，过长 revision id 会导致 `StringDataRightTruncation`；迁移 id 已缩短。

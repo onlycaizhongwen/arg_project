@@ -16,7 +16,7 @@
 | 向量库 | Qdrant 或 Milvus | pgvector | 决定部署复杂度、过滤能力和后续扩展 |
 | 消息队列 | RabbitMQ | Kafka | 决定异步任务模型和吞吐能力 |
 | 文件存储 | MinIO | 本地文件目录 / OSS | 决定原始文件与中间产物管理方式 |
-| 模型服务 | 通义/阿里云百炼 `text-embedding-v4` | `text-embedding-v3` 或 mock embedding | 决定调用封装、超时、成本和私有化能力 |
+| 模型服务 | 兼容 Embedding 适配层 | 线上通义 text-embedding / 本地 BGE / mock | 决定调用封装、超时、成本和私有化能力 |
 
 ## 推荐第一阶段范围
 
@@ -149,5 +149,5 @@
 1. 首期采用“FastAPI 控制面 + Python Worker”。
 2. 向量库选 Qdrant、Milvus 还是 pgvector。
 3. 本地是否允许用 Docker Compose 拉起 PostgreSQL、Redis、RabbitMQ、MinIO、向量库。
-4. Embedding 已确定使用通义/阿里云百炼，默认 `text-embedding-v4`，需配置 `DASHSCOPE_API_KEY`。
+4. Embedding 已确定采用兼容适配层：线上通义 text-embedding，本地 BGE；需配置 `DASHSCOPE_API_KEY` 或 `EMBEDDING_BASE_URL`。
 5. MVP 是否只做文件上传，不做数据库同步和第三方系统集成。

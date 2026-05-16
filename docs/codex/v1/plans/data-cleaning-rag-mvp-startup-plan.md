@@ -15,7 +15,7 @@
 | 元数据库 | PostgreSQL |
 | 对象存储 | MinIO |
 | 向量库 | Qdrant |
-| Embedding 模型 | 通义/阿里云百炼，默认 `text-embedding-v4` |
+| Embedding 模型 | 兼容适配层：线上通义 text-embedding，本地 BGE |
 | MVP 检索能力 | 语义召回 + 基础粗排/候选截断 |
 | 暂不实现 | Cross-Encoder 精排、去重打散、多源同步、复杂 OCR、完整后台管理 |
 
@@ -224,10 +224,13 @@
 第一轮要求：
 
 - 使用统一 `EmbeddingClient` 接口。
-- 默认接入通义/阿里云百炼 Embedding 服务。
-- 默认模型使用 `text-embedding-v4`，配置化支持降级到 `text-embedding-v3`。
-- 通过环境变量 `DASHSCOPE_API_KEY` 管理调用密钥。
-- 通过环境变量 `EMBEDDING_PROVIDER=dashscope`、`EMBEDDING_MODEL=text-embedding-v4` 管理模型选择。
+- 支持兼容模型适配，不把模型调用绑定死在业务逻辑中。
+- 线上默认接入通义/阿里云百炼 text-embedding 系列。
+- 本地支持部署 BGE 系列模型，例如 `bge-large-zh`、`bge-m3` 或团队指定版本。
+- 通过 `EMBEDDING_PROVIDER` 切换实现，建议取值：`dashscope`、`local_bge`、`mock`。
+- 线上通义通过环境变量 `DASHSCOPE_API_KEY` 管理调用密钥。
+- 本地 BGE 通过环境变量 `EMBEDDING_BASE_URL` 管理服务地址。
+- 通过环境变量 `EMBEDDING_MODEL`、`EMBEDDING_DIMENSION` 管理模型名称和向量维度。
 - 不把具体模型调用散落在业务代码中。
 
 ### 向量写入
@@ -303,13 +306,15 @@
 产物：
 
 - EmbeddingClient。
-- DashScope / 通义 Embedding 适配实现。
+- DashScope / 通义 text-embedding 适配实现。
+- Local BGE 适配实现。
 - QdrantClient。
 - vector_record 写入。
 
 验收：
 
-- 可通过 `DASHSCOPE_API_KEY` 调用通义 Embedding。
+- 可通过 `EMBEDDING_PROVIDER=dashscope` 调用通义 text-embedding。
+- 可通过 `EMBEDDING_PROVIDER=local_bge` 调用本地 BGE 服务。
 - text_chunk 有对应向量。
 - Qdrant 可按 query vector 召回。
 
@@ -360,7 +365,7 @@ python -m app.main
 ## 风险与约束
 
 - 如果本地不能使用 Docker，需要把 PostgreSQL、RabbitMQ、MinIO、Qdrant 改成外部连接配置。
-- 如果通义 Embedding 暂时不可用，保留 mock embedding 作为开发兜底，只验证链路，不评估检索质量。
+- 如果通义或本地 BGE 暂时不可用，保留 `mock` embedding 作为开发兜底，只验证链路，不评估检索质量。
 - 如果 PDF 解析质量不稳定，先将解析器接口固定，后续替换具体实现。
 - 如果 Qdrant 不可部署，可临时替换为 pgvector，但接口层保持 `VectorStore` 抽象。
 
@@ -370,7 +375,7 @@ python -m app.main
 
 1. 创建目录结构。
 2. 编写 `infra/docker-compose.yml`。
-3. 编写 `.env.example`，包含 `DASHSCOPE_API_KEY`、`EMBEDDING_PROVIDER`、`EMBEDDING_MODEL`。
+3. 编写 `.env.example`，包含 `EMBEDDING_PROVIDER`、`EMBEDDING_MODEL`、`EMBEDDING_DIMENSION`、`DASHSCOPE_API_KEY`、`EMBEDDING_BASE_URL`。
 4. 编写 `infra/db/init.sql`。
 5. 创建 FastAPI 与 Worker 最小启动文件。
 6. 验证 `GET /health`。
