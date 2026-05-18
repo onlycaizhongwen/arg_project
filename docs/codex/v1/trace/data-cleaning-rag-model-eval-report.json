@@ -1,0 +1,1412 @@
+﻿{
+    "generated_at":  "2026-05-18T07:49:14.2678665Z",
+    "documents_dir":  "samples\\documents\\demo-zh",
+    "queries_file":  "samples\\queries\\model-eval-queries-zh.json",
+    "tenant_id":  "default",
+    "configs":  [
+                    {
+                        "name":  "local_bge",
+                        "knowledge_base_id":  "kb-model-eval-local_bge-69b936a38f",
+                        "requested_config":  {
+                                                 "name":  "local_bge",
+                                                 "embedding_provider":  "local_bge",
+                                                 "embedding_model":  "bge-m3",
+                                                 "embedding_dimension":  1024,
+                                                 "embedding_base_url":  "http://host.docker.internal:11434",
+                                                 "rerank_provider":  "mock",
+                                                 "rerank_model":  "mock-reranker",
+                                                 "rerank_base_url":  "",
+                                                 "rerank_timeout_seconds":  5
+                                             },
+                        "running_config":  {
+                                               "embedding_provider":  "local_bge",
+                                               "embedding_model":  "bge-m3",
+                                               "embedding_dimension":  1024,
+                                               "rerank_provider":  "mock",
+                                               "rerank_model":  "mock-reranker"
+                                           },
+                        "uploaded_documents":  4,
+                        "query_count":  6,
+                        "check_count":  12,
+                        "passed_count":  6,
+                        "failed_count":  6,
+                        "hit_rate":  0.5,
+                        "mrr":  0.4167,
+                        "recall_at_k":  0.5,
+                        "search_latency_p50_ms":  231.69,
+                        "search_latency_p95_ms":  285.18,
+                        "search_latency_p99_ms":  285.18,
+                        "upload_latency_p50_ms":  53.02,
+                        "rerank_degraded_count":  0,
+                        "category_summary":  [
+                                                 {
+                                                     "category":  "事实问答",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  1
+                                                 },
+                                                 {
+                                                     "category":  "操作步骤",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  0.5
+                                                 },
+                                                 {
+                                                     "category":  "故障排查",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 },
+                                                 {
+                                                     "category":  "权限隔离",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  1
+                                                 },
+                                                 {
+                                                     "category":  "长尾表达",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 },
+                                                 {
+                                                     "category":  "效果调优",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 }
+                                             ],
+                        "results":  [
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  261.6,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.4852072,
+                                            "first_result_rerank_score":  0.5052072,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  243.3,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  1,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.05278688524590164,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  2,
+                                            "reciprocal_rank":  0.5,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  231.69,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.4135452,
+                                            "first_result_rerank_score":  0.4135452,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  2,
+                                            "reciprocal_rank":  0.5,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  211.95,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  232.85,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  5,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.52398026,
+                                            "first_result_rerank_score":  0.53398026,
+                                            "first_result":  "å½ç¨æ·åé¦âä¸ä¼ æåä½æç´¢ä¸å°å\u0085å®¹âæ¶ï¼å¼ç­äººååºå\u0085æ¥ç cleaning job ç¶æãå¦æ job ä»ä¸º PENDING æ RUNNINGï¼éè¦ç­å¾\u0085 Worker ç»§ç»­å¤çï¼å¦æ job ä¸º FAILEDï¼éè¦æ¥ç error_message å Worker æ¥å¿ã"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  247.03,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  5,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03225806451612903,
+                                            "first_result_rerank_score":  0.04225806451612903,
+                                            "first_result":  "å½ç¨æ·åé¦âä¸ä¼ æåä½æç´¢ä¸å°å\u0085å®¹âæ¶ï¼å¼ç­äººååºå\u0085æ¥ç cleaning job ç¶æãå¦æ job ä»ä¸º PENDING æ RUNNINGï¼éè¦ç­å¾\u0085 Worker ç»§ç»­å¤çï¼å¦æ job ä¸º FAILEDï¼éè¦æ¥ç error_message å Worker æ¥å¿ã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  210.67,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.49568665,
+                                            "first_result_rerank_score":  0.50568665,
+                                            "first_result":  "RAG æ£ç´¢å¿\u0085é¡»éµå®ç§æ·ãç¥è¯åºåæéæ ç­¾ä¸å±éç¦»ãtenant_id è¡¨ç¤ºç§æ·ï¼knowledge_base_id è¡¨ç¤ºç¥è¯åºï¼permission_tags è¡¨ç¤ºææ¡£å¯è§èå´ã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  239.41,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  2,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.04278688524590164,
+                                            "first_result":  "RAG æ£ç´¢å¿\u0085é¡»éµå®ç§æ·ãç¥è¯åºåæéæ ç­¾ä¸å±éç¦»ãtenant_id è¡¨ç¤ºç§æ·ï¼knowledge_base_id è¡¨ç¤ºç¥è¯åºï¼permission_tags è¡¨ç¤ºææ¡£å¯è§èå´ã"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  228.22,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.41402858,
+                                            "first_result_rerank_score":  0.41402858,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  213.85,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  216.47,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.42404914,
+                                            "first_result_rerank_score":  0.42404914,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  285.18,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        }
+                                    ]
+                    },
+                    {
+                        "name":  "local_bge_external_rerank",
+                        "knowledge_base_id":  "kb-model-eval-local_bge_external_rerank-e74d89c964",
+                        "requested_config":  {
+                                                 "name":  "local_bge_external_rerank",
+                                                 "embedding_provider":  "local_bge",
+                                                 "embedding_model":  "bge-m3",
+                                                 "embedding_dimension":  1024,
+                                                 "embedding_base_url":  "http://host.docker.internal:11434",
+                                                 "rerank_provider":  "external",
+                                                 "rerank_model":  "BAAI/bge-reranker-base",
+                                                 "rerank_base_url":  "http://reranker:8010/rerank",
+                                                 "rerank_timeout_seconds":  30
+                                             },
+                        "running_config":  {
+                                               "embedding_provider":  "local_bge",
+                                               "embedding_model":  "bge-m3",
+                                               "embedding_dimension":  1024,
+                                               "rerank_provider":  "external",
+                                               "rerank_model":  "BAAI/bge-reranker-base"
+                                           },
+                        "uploaded_documents":  4,
+                        "query_count":  6,
+                        "check_count":  12,
+                        "passed_count":  6,
+                        "failed_count":  6,
+                        "hit_rate":  0.5,
+                        "mrr":  0.3472,
+                        "recall_at_k":  0.5,
+                        "search_latency_p50_ms":  480.1,
+                        "search_latency_p95_ms":  708.45,
+                        "search_latency_p99_ms":  708.45,
+                        "upload_latency_p50_ms":  54.83,
+                        "rerank_degraded_count":  0,
+                        "category_summary":  [
+                                                 {
+                                                     "category":  "事实问答",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  1
+                                                 },
+                                                 {
+                                                     "category":  "操作步骤",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  0.3333
+                                                 },
+                                                 {
+                                                     "category":  "故障排查",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 },
+                                                 {
+                                                     "category":  "权限隔离",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  0.75
+                                                 },
+                                                 {
+                                                     "category":  "长尾表达",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 },
+                                                 {
+                                                     "category":  "效果调优",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 }
+                                             ],
+                        "results":  [
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  650.74,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.4852072,
+                                            "first_result_rerank_score":  0.2419438660144806,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  609.55,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  1,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.2419438660144806,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  3,
+                                            "reciprocal_rank":  0.3333,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  502.72,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.39713493,
+                                            "first_result_rerank_score":  0.00011323664512019604,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  3,
+                                            "reciprocal_rank":  0.3333,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  474.46,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.015873015873015872,
+                                            "first_result_rerank_score":  0.00011323664512019604,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  480.1,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  5,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.52899086,
+                                            "first_result_rerank_score":  0.0719984918832779,
+                                            "first_result":  "# å·¥åææ¥æä½æå"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  511.97,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  5,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.031024531024531024,
+                                            "first_result_rerank_score":  0.009109865874052048,
+                                            "first_result":  "å®¡è®¡äºä»¶éè¦è®°å½ actor_idãrequest_sourceãoperationãdocument_idãjob_id å metadataãéè¦æä½å\u0085æ¬ææ¡£æ´æ°ãå é¤ãéå»ºãæ¹ééå»ºãå¤±è´¥ä»»å¡éè¯åæ»çééæ¾ã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  2,
+                                            "reciprocal_rank":  0.5,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  514.87,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.47085166,
+                                            "first_result_rerank_score":  0.024523653090000153,
+                                            "first_result":  "æ°æ®æ¸\u0085æ´ä¸ RAG æå¡ç¨äºæå®¢æç¥è¯åºææ¡£æ¥å\u0085¥ç»ä¸æ£ç´¢é¾è·¯ãä¸å¡ç³»ç»éè¿ FastAPI ä¸ä¼ æä»¶ï¼åå§æä»¶è¿å\u0085¥ MinIOï¼ææ¡£ãçæ¬ãæ¸\u0085æ´ä»»å¡ãææ¬çæ®µååéè®°å½åå\u0085¥ PostgreSQLã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  708.45,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  2,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.002624356187880039,
+                                            "first_result":  "RAG æ£ç´¢å¿\u0085é¡»éµå®ç§æ·ãç¥è¯åºåæéæ ç­¾ä¸å±éç¦»ãtenant_id è¡¨ç¤ºç§æ·ï¼knowledge_base_id è¡¨ç¤ºç¥è¯åºï¼permission_tags è¡¨ç¤ºææ¡£å¯è§èå´ã"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  458.6,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.41402858,
+                                            "first_result_rerank_score":  0.00008599810826126486,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  451.6,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.00008599810826126486,
+                                            "first_result":  "# å®¢æç¥è¯åºæ¥å\u0085¥è¯´æ"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  455.62,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.4113502,
+                                            "first_result_rerank_score":  0.00014292735431808978,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  457.15,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "external",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.015873015873015872,
+                                            "first_result_rerank_score":  0.00014292735431808978,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        }
+                                    ]
+                    },
+                    {
+                        "name":  "dashscope_text_embedding_v4",
+                        "knowledge_base_id":  "kb-model-eval-dashscope_text_embedding_v4-178ed599ff",
+                        "requested_config":  {
+                                                 "name":  "dashscope_text_embedding_v4",
+                                                 "embedding_provider":  "dashscope",
+                                                 "embedding_model":  "text-embedding-v4",
+                                                 "embedding_dimension":  1024,
+                                                 "embedding_base_url":  "",
+                                                 "rerank_provider":  "mock",
+                                                 "rerank_model":  "mock-reranker",
+                                                 "rerank_base_url":  "",
+                                                 "rerank_timeout_seconds":  5
+                                             },
+                        "running_config":  {
+                                               "embedding_provider":  "dashscope",
+                                               "embedding_model":  "text-embedding-v4",
+                                               "embedding_dimension":  1024,
+                                               "rerank_provider":  "mock",
+                                               "rerank_model":  "mock-reranker"
+                                           },
+                        "uploaded_documents":  4,
+                        "query_count":  6,
+                        "check_count":  12,
+                        "passed_count":  9,
+                        "failed_count":  3,
+                        "hit_rate":  0.75,
+                        "mrr":  0.4722,
+                        "recall_at_k":  0.75,
+                        "search_latency_p50_ms":  271.9,
+                        "search_latency_p95_ms":  341.5,
+                        "search_latency_p99_ms":  341.5,
+                        "upload_latency_p50_ms":  62.93,
+                        "rerank_degraded_count":  0,
+                        "category_summary":  [
+                                                 {
+                                                     "category":  "事实问答",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  1
+                                                 },
+                                                 {
+                                                     "category":  "操作步骤",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  0.25
+                                                 },
+                                                 {
+                                                     "category":  "故障排查",
+                                                     "check_count":  2,
+                                                     "passed_count":  1,
+                                                     "hit_rate":  0.5,
+                                                     "mrr":  0.25
+                                                 },
+                                                 {
+                                                     "category":  "权限隔离",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  1
+                                                 },
+                                                 {
+                                                     "category":  "长尾表达",
+                                                     "check_count":  2,
+                                                     "passed_count":  2,
+                                                     "hit_rate":  1,
+                                                     "mrr":  0.3333
+                                                 },
+                                                 {
+                                                     "category":  "效果调优",
+                                                     "check_count":  2,
+                                                     "passed_count":  0,
+                                                     "hit_rate":  0,
+                                                     "mrr":  0
+                                                 }
+                                             ],
+                        "results":  [
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  315.33,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.48717412,
+                                            "first_result_rerank_score":  0.50717412,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-fact-embedding-provider",
+                                            "category":  "事实问答",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "local_bge",
+                                                                     "bge-m3",
+                                                                     "1024"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "local_bge",
+                                                                      "bge-m3",
+                                                                      "1024"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  306.01,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  1,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.05278688524590164,
+                                            "first_result":  "æ¸\u0085æ´ä»»å¡éè¿ RabbitMQ æéç» Python WorkerãWorker ä¼è§£ææä»¶ãæ¸\u0085çç©ºç½å­ç¬¦ãææ®µè½ååï¼å¹¶è°ç¨å½åé\u0085ç½®ç Embedding providerãå\u0085ç½æ¼ç¤ºç¯å¢æ¨èä½¿ç¨ local_bge å bge-m3ï¼åéç»´åº¦ä¸º 1024ï¼çäº§ç¯å¢å¯ä»¥åæ¢å°éä¹ DashScope text-embedding-v4ã"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  4,
+                                            "reciprocal_rank":  0.25,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  280.09,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  8,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.32114634,
+                                            "first_result_rerank_score":  0.32114634,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-ops-upload-not-searchable",
+                                            "category":  "操作步骤",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "Worker"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "jobs",
+                                                                      "diagnostics",
+                                                                      "Worker",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  4,
+                                            "reciprocal_rank":  0.25,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  271.9,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  8,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "locks release",
+                                                                     "rebuild"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  2,
+                                            "reciprocal_rank":  0.5,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  265.5,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  8,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.39584762,
+                                            "first_result_rerank_score":  0.40584762,
+                                            "first_result":  "å½ç¨æ·åé¦âä¸ä¼ æåä½æç´¢ä¸å°å\u0085å®¹âæ¶ï¼å¼ç­äººååºå\u0085æ¥ç cleaning job ç¶æãå¦æ job ä»ä¸º PENDING æ RUNNINGï¼éè¦ç­å¾\u0085 Worker ç»§ç»­å¤çï¼å¦æ job ä¸º FAILEDï¼éè¦æ¥ç error_message å Worker æ¥å¿ã"
+                                        },
+                                        {
+                                            "id":  "zh-trouble-stale-lock",
+                                            "category":  "故障排查",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "locks release",
+                                                                      "滞留锁",
+                                                                      "rebuild"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  341.5,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  5,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  8,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03252247488101534,
+                                            "first_result_rerank_score":  0.04252247488101534,
+                                            "first_result":  "å½ç¨æ·åé¦âä¸ä¼ æåä½æç´¢ä¸å°å\u0085å®¹âæ¶ï¼å¼ç­äººååºå\u0085æ¥ç cleaning job ç¶æãå¦æ job ä»ä¸º PENDING æ RUNNINGï¼éè¦ç­å¾\u0085 Worker ç»§ç»­å¤çï¼å¦æ job ä¸º FAILEDï¼éè¦æ¥ç error_message å Worker æ¥å¿ã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags",
+                                                                     "permission_context"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  258.82,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  6,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.6234962,
+                                            "first_result_rerank_score":  0.6334962,
+                                            "first_result":  "RAG æ£ç´¢å¿\u0085é¡»éµå®ç§æ·ãç¥è¯åºåæéæ ç­¾ä¸å±éç¦»ãtenant_id è¡¨ç¤ºç§æ·ï¼knowledge_base_id è¡¨ç¤ºç¥è¯åºï¼permission_tags è¡¨ç¤ºææ¡£å¯è§èå´ã"
+                                        },
+                                        {
+                                            "id":  "zh-permission-isolation",
+                                            "category":  "权限隔离",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "tenant_id",
+                                                                     "knowledge_base_id",
+                                                                     "permission_tags",
+                                                                     "permission_context"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "tenant_id",
+                                                                      "knowledge_base_id",
+                                                                      "permission_tags",
+                                                                      "permission_context"
+                                                                  ],
+                                            "first_match_rank":  1,
+                                            "reciprocal_rank":  1,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  259.6,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  2,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  6,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.03278688524590164,
+                                            "first_result_rerank_score":  0.04278688524590164,
+                                            "first_result":  "RAG æ£ç´¢å¿\u0085é¡»éµå®ç§æ·ãç¥è¯åºåæéæ ç­¾ä¸å±éç¦»ãtenant_id è¡¨ç¤ºç§æ·ï¼knowledge_base_id è¡¨ç¤ºç¥è¯åºï¼permission_tags è¡¨ç¤ºææ¡£å¯è§èå´ã"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "semantic",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "RERANK_DEGRADED"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  3,
+                                            "reciprocal_rank":  0.3333,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  281.46,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.3145757,
+                                            "first_result_rerank_score":  0.3145757,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-longtail-rerank-degrade",
+                                            "category":  "长尾表达",
+                                            "search_mode":  "hybrid",
+                                            "passed":  true,
+                                            "matched_keywords":  [
+                                                                     "RERANK_DEGRADED"
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "降级",
+                                                                      "粗排结果",
+                                                                      "RERANK_DEGRADED"
+                                                                  ],
+                                            "first_match_rank":  3,
+                                            "reciprocal_rank":  0.3333,
+                                            "recall_at_k":  true,
+                                            "latency_ms":  277.01,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "semantic",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  260.49,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.3152319,
+                                            "first_result_rerank_score":  0.3152319,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        },
+                                        {
+                                            "id":  "zh-tuning-latency",
+                                            "category":  "效果调优",
+                                            "search_mode":  "hybrid",
+                                            "passed":  false,
+                                            "matched_keywords":  [
+
+                                                                 ],
+                                            "expected_keywords":  [
+                                                                      "recall_size",
+                                                                      "pre_rank_size",
+                                                                      "top_k",
+                                                                      "max_chunks_per_document"
+                                                                  ],
+                                            "first_match_rank":  null,
+                                            "reciprocal_rank":  0,
+                                            "recall_at_k":  false,
+                                            "latency_ms":  265.37,
+                                            "result_count":  5,
+                                            "semantic_recall_count":  19,
+                                            "keyword_recall_count":  0,
+                                            "merged_count":  19,
+                                            "business_filtered_count":  7,
+                                            "rerank_enabled":  true,
+                                            "rerank_provider":  "mock",
+                                            "rerank_degraded":  false,
+                                            "rerank_score_count":  5,
+                                            "first_result_has_rerank_score":  true,
+                                            "first_result_score":  0.01639344262295082,
+                                            "first_result_rerank_score":  0.01639344262295082,
+                                            "first_result":  "ææ¥æ­¥éª¤ï¼"
+                                        }
+                                    ]
+                    }
+                ]
+}

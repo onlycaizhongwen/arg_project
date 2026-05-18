@@ -57,6 +57,7 @@ def retry_failed_job(
     tenant_id: str = "default",
     actor_id: str = "system",
     request_source: str = "api",
+    trace_id: str | None = None,
 ) -> dict[str, object]:
     job = _load_retry_source_job(job_id=job_id, tenant_id=tenant_id)
     if job is None:
@@ -107,6 +108,7 @@ def retry_failed_job(
                 "filename": job["title"] or "uploaded-file",
                 "rebuild": True,
                 "operation": "RETRY_JOB",
+                "trace_id": trace_id,
             }
         )
     except Exception:

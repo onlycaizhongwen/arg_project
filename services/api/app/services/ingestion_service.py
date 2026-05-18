@@ -35,6 +35,7 @@ def ingest_file(
     filename: str,
     content_type: str | None,
     payload: bytes,
+    trace_id: str | None = None,
 ) -> IngestionResult:
     document_id = str(uuid4())
     version_id = str(uuid4())
@@ -67,6 +68,7 @@ def ingest_file(
             "object_key": object_key,
             "filename": filename,
             "operation": "INDEX_DOCUMENT",
+            "trace_id": trace_id,
         }
     )
     return IngestionResult(

@@ -1,7 +1,7 @@
 # 项目状态
 
 - 当前版本：v1
-- 当前阶段：阶段 4 P4-5 已完成
+- 当前阶段：Phase 7 P7-2 已完成，下一步 P7-3 客户真实语料评测包
 - 当前主题：data-cleaning-rag-architecture
 - 说明：此文件用于记录需求、设计、计划、实现与追踪的主线状态。
 
@@ -13,6 +13,12 @@
 | data-cleaning-rag-phase2 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase2-plan.md | MVP 主链路、PostgreSQL、Qdrant、Embedding provider、可选重排服务 | 已计划 |
 | data-cleaning-rag-phase3 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase3-plan.md | 阶段 2 检索漏斗、文档/版本/chunk/vector 元数据 | 首版已完成 |
 | data-cleaning-rag-phase4 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase4-plan.md | 阶段 3 索引生命周期、审计事件、清洗任务状态、RabbitMQ/Qdrant/PostgreSQL 指标 | P4-5 已完成 |
+| data-cleaning-rag-phase5 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase5-poc-plan.md | MVP、阶段 2/3/4 能力、API 契约、模型评测、PoC 演示脚本 | 已完成 |
+| data-cleaning-rag-phase6 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase6-production-hardening-plan.md | Phase 5 对客联调包、部署运维说明、诊断概览、批量治理、模型评测 | P6-8 已完成 |
+| data-cleaning-rag-phase7 | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase7-production-readiness-plan.md | Phase 6 生产部署与运维加固、客户测试/生产环境、IAM/SSO、正式 rerank、真实语料、CI/CD | 已规划 |
+| data-cleaning-rag-phase7-auth | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-phase7-auth-design.md | docs/codex/v1/plans/data-cleaning-rag-phase7-p7-1-auth-plan.md | Phase 6 Header 上下文、审计、权限标签过滤、部署配置模板 | 首版已完成 |
+| data-cleaning-rag-phase7-rerank-capacity | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-phase7-p7-2-rerank-capacity-plan.md | 本地 BGE reranker、external rerank、模型评估、轻量容量压测、降级观测 | 首版已完成 |
+| data-cleaning-rag-demo-console | docs/codex/v1/requirements/data-cleaning-rag-architecture-requirements.md | docs/codex/v1/designs/data-cleaning-rag-architecture-design.md | docs/codex/v1/plans/data-cleaning-rag-demo-console-plan.md | Vue 对客演示控制台、上传、任务轮询、检索、rerank 开关、诊断摘要 | MVP 已完成 |
 
 ## 进度与状态
 
@@ -20,12 +26,34 @@
 | --- | --- | --- |
 | 需求分析 | 已完成 | 已基于架构图抽取目标、范围、场景、功能需求、非功能需求和待确认项。 |
 | 技术设计 | 已完成 | 已完成总体架构、技术选型、模块设计、数据对象、接口草案、状态流转和风险说明。 |
-| 执行计划 | 阶段 4 已规划 | 已拆分选型验证、MVP、混合检索、多源治理、索引生命周期和生产可控性阶段；阶段 4 已明确并发控制、失败补偿、批量治理、完整审计、异常迹象和模型评测。 |
-| 实现 | 阶段 4 P4-5 已完成 | 已完成 MVP 主链路、阶段 2 检索漏斗、阶段 3 索引生命周期；阶段 4 已完成 document 级操作锁、失败 job 人工重试、完整审计增强和异常迹象诊断概览。 |
-| 追踪审查 | 阶段 3 已完成 | 已补充 MVP 主链路、阶段 2 和阶段 3 一致性 trace；下一步建议进入阶段 4，重点补并发控制、批量治理、失败补偿、完整审计和生产模型评测。 |
+| 执行计划 | Phase 7 P7-2 已完成 | 已拆分选型验证、MVP、混合检索、多源治理、索引生命周期、生产可控性、对客 PoC 联调包、生产部署运维加固和生产就绪计划；P7-1 生产认证与授权、P7-2 正式 rerank 容量基线已完成首版。 |
+| 实现 | Phase 7 P7-2 已完成 | 已完成 MVP 主链路、阶段 2 检索漏斗、阶段 3 索引生命周期、阶段 4 生产可控性增强、Phase 5 对客 PoC 联调材料、Phase 6 生产部署与运维加固首版、P7-1 认证上下文模式，以及 P7-2 external rerank 评估与压测脚本增强。 |
+| 追踪审查 | Phase 7 P7-2 已完成报告 | 已补充 MVP 主链路、阶段 2、阶段 3、Phase 6、P7-1 一致性 trace 和 P7-2 rerank 容量报告；Phase 5 已对 API 契约、脚本清单和过期描述做对客材料一致性检查。 |
 
 ## 变更记录
 
+- 2026-05-18：新增 `docs/codex/v1/plans/data-cleaning-rag-phase7-production-readiness-plan.md`，规划 Phase 7 生产就绪工作，拆分为 P7-1 生产认证与授权、P7-2 正式 rerank 服务接入与容量基线、P7-3 客户真实语料评测包、P7-4 隔离恢复演练、P7-5 CI/CD 发布流水线、P7-6 测试/生产部署形态设计；建议下一步优先执行 P7-1。
+- 2026-05-18：新增 `docs/codex/v1/designs/data-cleaning-rag-phase7-auth-design.md` 和 `docs/codex/v1/plans/data-cleaning-rag-phase7-p7-1-auth-plan.md`，明确 local/gateway/iam 三种认证模式、可信 Header 字段契约、权限标签兜底策略、错误码和 P7-1 实施步骤；下一步进入 P7-1 代码实现。
+- 2026-05-18：完成 Phase 7 P7-1 生产认证与授权接入首版：新增 `AUTH_CONTEXT_MODE=local|gateway|iam`、`AUTH_REQUIRE_ACTOR`、`AUTH_REQUIRE_TENANT`、`AUTH_DEFAULT_PERMISSION_TAGS`、`AUTH_EMPTY_PERMISSION_POLICY` 等配置；gateway/iam 模式可强制校验可信 Header，local 模式保持 PoC 兼容；Compose、环境模板、API 契约、部署运维说明和问题排查手册已同步；新增 `docs/codex/v1/trace/data-cleaning-rag-phase7-auth-trace.md`，回归验证通过。下一步进入 P7-2 正式 rerank 服务接入与容量基线。
+- 2026-05-18：完成 Phase 7 P7-2 正式 rerank 服务接入与容量基线首版：扩展 `scripts/model-eval.ps1` 支持 `-IncludeExternalRerank`，扩展 `scripts/search-load-test.ps1` 支持 rerank 开关、provider、降级次数和分数覆盖统计；本地 `BAAI/bge-reranker-base` reranker 通过 `scripts/bge-rerank-test.ps1` 验证，external rerank 压测 0 失败、0 降级；新增 `docs/codex/v1/trace/data-cleaning-rag-rerank-capacity-report.md`。下一步进入 P7-3 客户真实语料评测包。
+- 2026-05-18：完成对客演示控制台 MVP：新增 `services/console` Vue 3 + Vite + TypeScript 前端，覆盖演示上下文、链路状态、文件上传、job 轮询、RAG 检索、rerank provider 切换、rerank 开关、命中片段和诊断摘要；新增 `services/api/app/api/runtime_config.py` 支持演示环境运行时切换 `disabled/mock/external`；新增 `docs/codex/v1/plans/data-cleaning-rag-demo-console-plan.md`、`services/console/README.md` 和 `scripts/rerank-runtime-config-test.ps1`；前端构建、Vite 页面访问、API 代理和 rerank 切换验证通过。
+- 2026-05-18：完成 Phase 6 生产部署与运维加固一致性 trace 审查，新增 `docs/codex/v1/trace/data-cleaning-rag-phase6-trace.md`；结论为 P6-1 到 P6-8 首版闭环已完成，剩余风险集中在真实 IAM/SSO、生产级恢复演练、正式 rerank 容量、监控平台接入和 CI/CD 发布自动化。
+- 2026-05-18：完成 Phase 6 P6-8 备份恢复与发布流程首版：新增 `scripts/backup-dry-run.ps1`，可非破坏式导出 PostgreSQL 备份、检查 MinIO bucket 摘要和 Qdrant collections，并生成 `docs/codex/v1/trace/data-cleaning-rag-backup-dry-run-report.md`；新增 `docs/codex/v1/plans/数据清洗与RAG服务发布检查清单.md`，覆盖发布前冻结项、镜像 tag、发布前命令、备份恢复、Alembic 迁移原则、发布步骤、回滚原则和生产审批边界；更新部署运维说明和 Phase 6 计划状态；`backups/` 已加入 `.gitignore`，避免本地 SQL 备份误提交。下一步进入 Phase 6 收尾 trace 审查。
+- 2026-05-18：完成 Phase 6 P6-7 评测集扩展与容量压测首版：新增中文业务样例文档和分类查询集，扩展 `scripts/model-eval.ps1` 输出 MRR、Recall@K、P50/P95/P99、分类汇总和 rerank 分数覆盖；新增 `scripts/search-load-test.ps1` 输出上传吞吐、搜索 QPS 和搜索延迟 P50/P95/P99；已生成 `data-cleaning-rag-model-eval-zh-report` 和 `data-cleaning-rag-load-test-report`，并完成 smoke、diagnostics 和 git diff 检查。下一步进入 P6-8 备份恢复与发布流程。
+- 2026-05-18：完成 Phase 6 P6-6 批量治理增强首版：新增 `POST /api/v1/document-batches/{batch_id}/retry-failed` 和 `POST /api/v1/document-batches/{batch_id}/cancel`；失败 item 可在原批次内重新提交，已成功 item 不重复执行；取消仅处理 `PENDING` item；批量 item 明细支持 `status` 过滤和 `total_count`；新增 `scripts/document-batch-retry-test.ps1`，更新 API 契约、部署运维说明和问题排查手册；已通过 compileall、Compose config、API 镜像重建、document-batch-retry、document-batch-rebuild、smoke、diagnostics 和 git diff 检查。下一步进入 P6-7 评测集扩展与容量压测。
+- 2026-05-18：完成 Phase 6 P6-5 锁超时释放与治理闭环首版：新增 `POST /api/v1/documents/{document_id}/locks/release`，仅释放超过阈值且关联 job 不处于 `PENDING`、`RUNNING`、`RETRYING` 的滞留锁；释放成功写入 `DOCUMENT_OPERATION_LOCK_RELEASED` 审计事件；新增 `scripts/document-lock-release-test.ps1`，更新 API 契约和部署运维说明；已通过 compileall、Compose config、API 镜像重建、document-lock-release、document-operation-lock、diagnostics、smoke 和 git diff 检查。下一步进入 P6-6 批量治理增强。
+- 2026-05-18：完成 Phase 6 P6-4 监控指标出口首版：新增 `GET /api/v1/metrics`，以 Prometheus text format 输出 cleaning job 状态/失败率、RabbitMQ 队列、document 操作锁、rerank 降级、API 请求和 5xx 错误计数；新增 `scripts/metrics-test.ps1`，更新 API 契约和部署运维说明中的监控采集与告警建议；已通过 compileall、Compose config、API 镜像重建、metrics-test、diagnostics-test 和 git diff 检查。下一步进入 P6-5 锁超时释放与治理闭环。
+- 2026-05-18：完成 Phase 6 P6-3 结构化日志与 trace_id 串联首版：API middleware 读取或生成 `trace_id`，响应头回传 `X-Trace-Id`，错误响应包含 `trace_id`；上传、更新、重建、retry、批量重建的 MQ 消息携带 `trace_id`；Worker 输出包含 `trace_id`、`job_id`、`document_id`、`document_version_id`、`operation` 的 JSON 日志；已通过 request-context 验证并在 API/Worker 日志中确认同一 trace_id 可串联。下一步进入 P6-4 监控指标出口。
+- 2026-05-18：完成 Phase 6 P6-2 请求上下文 Header 注入首版：新增 `services/api/app/core/request_context.py`，上传、文档治理、job retry、批量重建和检索入口支持 `X-Tenant-Id`、`X-Actor-Id`、`X-Request-Source`、`X-Permission-Tags`、`X-Trace-Id`；新增 `scripts/request-context-test.ps1`，并更新 API 契约；下一步进入 P6-3 结构化日志与 trace_id 串联。
+- 2026-05-18：完成 Phase 6 P6-1 环境配置分层首版：新增 `.env.local.example`、`.env.test.example`、`.env.prod.example`，更新 `.gitignore` 白名单以允许三份模板入库；更新 `数据清洗与RAG服务部署运维说明.md`，补充分环境模板选择、敏感信息管理、镜像源覆盖、测试/生产配置原则；下一步进入 P6-2 认证上下文与操作人注入。
+- 2026-05-18：新增 `docs/codex/v1/plans/data-cleaning-rag-phase6-p6-1-env-plan.md`，将 Phase 6 下一步 P6-1 环境配置分层拆成可执行计划，明确 `.env.local.example`、`.env.test.example`、`.env.prod.example` 的目标配置、文档更新范围、验证命令、影响范围和完成标准；下一步可直接进入 P6-1 实现。
+- 2026-05-18：新增 `docs/codex/v1/plans/data-cleaning-rag-phase6-production-hardening-plan.md`，规划 Phase 6 生产部署与运维加固，拆分为 P6-1 环境配置分层、P6-2 认证上下文、P6-3 结构化日志与 trace_id、P6-4 监控指标出口、P6-5 锁超时释放、P6-6 批量治理增强、P6-7 评测集扩展与容量压测、P6-8 备份恢复与发布流程；建议下一步优先执行 P6-1。
+- 2026-05-18：完成 Phase 5 P5-3/P5-4/P5-5：新增 `docs/codex/v1/plans/数据清洗与RAG服务部署运维说明.md` 和 `docs/codex/v1/plans/数据清洗与RAG服务问题排查手册.md`，覆盖组件职责、环境变量、国内镜像源、启动停止、迁移、健康检查、日志、备份清理、API/Docker/PostgreSQL/RabbitMQ/Worker/MinIO/Qdrant/Embedding/BGE/DashScope/rerank/锁滞留等排查路径；同步修正 API 契约中过期的“未实现人工重试接口”描述，并对实际路由和脚本清单完成一致性检查。
+- 2026-05-18：完成 Phase 5 P5-1/P5-2 首版并验证：新增 `docs/codex/v1/plans/数据清洗与RAG服务PoC联调说明.md` 和 `scripts/poc-demo.ps1`，覆盖 PoC 环境准备、模型配置、启动迁移、手工联调用例、验收记录，以及自动化演示链路；`scripts/poc-demo.ps1` 已在 `local_bge/bge-m3 + mock rerank` 下跑通，批量重建 2/2 成功，诊断状态 `ok`。
+- 2026-05-18：新增 `docs/codex/v1/plans/data-cleaning-rag-phase5-poc-plan.md`，规划 Phase 5 对客 PoC 联调包，明确 PoC 联调说明、部署运维说明、演示脚本、问题排查手册和一致性检查五项交付物；下一步建议先执行 P5-1 联调说明和 P5-2 演示脚本。
+- 2026-05-18：完成 P4-6 生产模型评测首版：新增 `scripts/model-eval.ps1`、`samples/queries/model-eval-queries.json`，生成 `docs/codex/v1/trace/data-cleaning-rag-model-eval-report.json` 和 `.md`；本轮评测覆盖 `mock`、`local_bge/bge-m3` 和 DashScope `text-embedding-v4`，结果分别为 8/10、10/10、10/10，当前样例下 `local_bge` P95 延迟低于 DashScope。
+- 2026-05-18：完成 P4-3 批量治理任务首版并验证：新增 `POST /api/v1/document-batches/rebuild`、`GET /api/v1/document-batches/{batch_id}`、`GET /api/v1/document-batches/{batch_id}/items`，新增 `0011_doc_batch` 迁移和 `scripts/document-batch-rebuild-test.ps1`；已完成编译、Compose 配置解析、API 镜像重建、迁移、批量重建端到端、smoke、diagnostics、document-operation-lock 回归，phase2 在 `local_bge + mock rerank` 下 15/15 通过。
+- 2026-05-18：新增 `docs/codex/v1/plans/data-cleaning-rag-post-mvp-next-plan.md`，将 MVP 完成后的路线串联为 P4-3 批量治理任务、P4-6 生产模型评测、Phase 5 对客 PoC 联调包和 Phase 6 生产部署与运维加固；建议下一步优先实现 P4-3 批量重建任务。
 - 2026-05-14：创建 `data-cleaning-rag-architecture` 主题，完成需求分析、技术选型/设计和实施计划文档。
 - 2026-05-14：补充 `docs/codex/v1/plans/data-cleaning-rag-next-step.md`，明确下一步进入选型验证与 MVP 骨架准备。
 - 2026-05-14：补充 RAG 检索漏斗方案，将“召回 -> 粗排 -> 业务干预 -> 精排”纳入需求、设计和计划。

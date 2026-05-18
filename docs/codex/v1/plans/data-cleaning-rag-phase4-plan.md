@@ -180,6 +180,8 @@
 
 ## 当前执行记录
 
+- 2026-05-18：完成 P4-6 生产模型评测首版：新增 `samples/queries/model-eval-queries.json` 和 `scripts/model-eval.ps1`，用于在同一批样例文档和查询集下比较 `mock`、`local_bge` 与可选 DashScope `text-embedding-v4` 的命中率、检索延迟和 rerank 降级情况，并输出 JSON/Markdown 报告；本轮报告已生成到 `docs/codex/v1/trace/data-cleaning-rag-model-eval-report.md`，结果为 `mock` 8/10、`local_bge` 10/10、DashScope 10/10。
+- 2026-05-18：完成 P4-3 批量治理任务首版：新增批量重建任务接口、批量任务表、批量 item 表和 `scripts/document-batch-rebuild-test.ps1` 验证脚本；首版采用 API 侧编排，逐个复用已有单文档 rebuild 能力，避免扩大 Worker 协议改动面；已通过迁移、批量重建端到端、smoke、diagnostics、document-operation-lock 回归，phase2 在 `local_bge + mock rerank` 下通过。
 - 2026-05-16：完成 P4-1 文档级并发控制首版：新增 `document.operation_status`、`operation_lock_id`、`operation_started_at` 迁移；文档更新与重建使用 job_id 作为锁 ID，Worker 成功或最终失败后释放锁；删除操作使用同步锁并在删除完成后清理锁字段；新增 `DOCUMENT_OPERATION_IN_PROGRESS` 错误码和 `scripts/document-operation-lock-test.ps1` 验证脚本；锁冲突会写入 `DOCUMENT_OPERATION_REJECTED` 审计事件。
 - 2026-05-16：完成 P4-2 失败补偿与人工重试首版：新增 `cleaning_job.retry_of_job_id` 迁移；新增 `POST /api/v1/jobs/{job_id}/retry`，仅允许 `FAILED` job 创建新的 retry job；retry job 复用原 `document_version` 与对象存储文件，并写入 `JOB_RETRY_REQUESTED` 审计事件；新增 `scripts/job-retry-test.ps1` 验证脚本，覆盖失败 job 重试、retry job 可追溯、审计事件和非失败 job 拒绝。
 - 2026-05-16：完成 P4-4 完整审计增强：上传、更新、重建、重试消息补充 `operation` 语义；Worker 成功时写入 `DOCUMENT_VERSION_INDEXED`、`DOCUMENT_INDEX_REBUILD_SUCCEEDED` 或 `JOB_RETRY_SUCCEEDED`；Worker 最终失败时写入 `DOCUMENT_VERSION_INDEX_FAILED`、`DOCUMENT_INDEX_REBUILD_FAILED` 或 `JOB_RETRY_FAILED`；删除完成后补 `DOCUMENT_DELETE_SUCCEEDED`；审计查询支持按 `operation` 过滤；`scripts/document-audit-test.ps1`、`scripts/job-retry-test.ps1`、`scripts/document-operation-lock-test.ps1`、`scripts/phase2-eval.ps1` 和 `scripts/smoke-test.ps1` 已通过。

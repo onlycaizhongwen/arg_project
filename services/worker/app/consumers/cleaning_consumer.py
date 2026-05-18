@@ -33,13 +33,15 @@ class CleaningJobMessage:
     filename: str
     rebuild: bool = False
     operation: str = "INDEX_DOCUMENT"
+    trace_id: str | None = None
 
 
 def handle_cleaning_job(message: CleaningJobMessage) -> None:
     if _get_job_status(message.job_id) == "SUCCEEDED":
-        print(f"skip succeeded job: {message.job_id}", flush=True)
+        _log_worker_event("skip_succeeded_job", message)
         return
 
+    _log_worker_event("job_started", message)
     _mark_job_started(message.job_id)
     try:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -52,6 +54,7 @@ def handle_cleaning_job(message: CleaningJobMessage) -> None:
                 else:
                     stale_chunk_count = 0
                 _mark_job_finished(message, chunk_count=0, vector_count=0, stale_chunk_count=stale_chunk_count)
+                _log_worker_event("job_succeeded", message, chunk_count=0, vector_count=0, stale_chunk_count=stale_chunk_count)
                 return
             chunk_ids = _insert_chunks(message, chunks)
             vectors = build_embedding_client().embed_documents([chunk.content for chunk in chunks])
@@ -82,7 +85,15 @@ def handle_cleaning_job(message: CleaningJobMessage) -> None:
             vector_count=len(chunk_ids),
             stale_chunk_count=stale_chunk_count,
         )
+        _log_worker_event(
+            "job_succeeded",
+            message,
+            chunk_count=len(chunk_ids),
+            vector_count=len(chunk_ids),
+            stale_chunk_count=stale_chunk_count,
+        )
     except Exception as exc:
+        _log_worker_event("job_failed", message, error_message=str(exc)[:2000])
         _mark_job_failed(message, str(exc))
         raise
 
@@ -123,6 +134,20 @@ def consume_forever() -> None:
     channel.basic_consume(queue=settings.rabbitmq_queue, on_message_callback=on_message)
     print(f"worker consuming queue: {settings.rabbitmq_queue}", flush=True)
     channel.start_consuming()
+
+
+def _log_worker_event(event: str, message: CleaningJobMessage, **extra: object) -> None:
+    payload = {
+        "event": event,
+        "trace_id": message.trace_id,
+        "job_id": message.job_id,
+        "tenant_id": message.tenant_id,
+        "document_id": message.document_id,
+        "document_version_id": message.document_version_id,
+        "operation": message.operation,
+        **extra,
+    }
+    print(json.dumps(payload, ensure_ascii=True), flush=True)
 
 
 def _insert_chunks(message: CleaningJobMessage, chunks: list[TextChunk]) -> list[str]:
@@ -349,6 +374,7 @@ def _mark_job_finished(
                             "embedding_provider": settings.embedding_provider,
                             "embedding_model": settings.embedding_model,
                             "embedding_dimension": settings.embedding_dimension,
+                            "trace_id": message.trace_id,
                         }
                     ),
                 ),
@@ -426,6 +452,7 @@ def _mark_job_failed(message: CleaningJobMessage, error_message: str) -> None:
                                 "job_operation": message.operation,
                                 "error_message": error_message[:2000],
                                 "worker_max_retries": settings.worker_max_retries,
+                                "trace_id": message.trace_id,
                             }
                         ),
                     ),

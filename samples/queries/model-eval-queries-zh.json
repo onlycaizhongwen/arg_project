@@ -1,0 +1,38 @@
+[
+  {
+    "id": "zh-fact-embedding-provider",
+    "category": "事实问答",
+    "query": "内网演示环境推荐使用什么 embedding provider 和模型？",
+    "expected_keywords": ["local_bge", "bge-m3", "1024"]
+  },
+  {
+    "id": "zh-ops-upload-not-searchable",
+    "category": "操作步骤",
+    "query": "上传成功但是搜索不到内容应该怎么排查？",
+    "expected_keywords": ["jobs", "diagnostics", "Worker", "rebuild"]
+  },
+  {
+    "id": "zh-trouble-stale-lock",
+    "category": "故障排查",
+    "query": "document 操作锁超过阈值并且 job 已失败时怎么处理？",
+    "expected_keywords": ["locks release", "滞留锁", "rebuild"]
+  },
+  {
+    "id": "zh-permission-isolation",
+    "category": "权限隔离",
+    "query": "RAG 检索如何保证不同租户和权限标签的数据隔离？",
+    "expected_keywords": ["tenant_id", "knowledge_base_id", "permission_tags", "permission_context"]
+  },
+  {
+    "id": "zh-longtail-rerank-degrade",
+    "category": "长尾表达",
+    "query": "如果重排服务挂了，系统会不会直接不可用？",
+    "expected_keywords": ["降级", "粗排结果", "RERANK_DEGRADED"]
+  },
+  {
+    "id": "zh-tuning-latency",
+    "category": "效果调优",
+    "query": "检索延迟变高时可以调整哪些召回和候选参数？",
+    "expected_keywords": ["recall_size", "pre_rank_size", "top_k", "max_chunks_per_document"]
+  }
+]

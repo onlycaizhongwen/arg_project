@@ -28,6 +28,7 @@ def create_document_version(
     payload: bytes,
     actor_id: str = "system",
     request_source: str = "api",
+    trace_id: str | None = None,
 ) -> dict[str, object]:
     version_id = str(uuid4())
     job_id = str(uuid4())
@@ -81,6 +82,7 @@ def create_document_version(
                 "object_key": object_key,
                 "filename": filename,
                 "operation": "UPDATE_VERSION",
+                "trace_id": trace_id,
             }
         )
     except Exception:
@@ -167,6 +169,7 @@ def rebuild_document_index(
     tenant_id: str,
     actor_id: str = "system",
     request_source: str = "api",
+    trace_id: str | None = None,
 ) -> dict[str, object]:
     job_id = str(uuid4())
     _acquire_document_operation_lock(
@@ -210,6 +213,7 @@ def rebuild_document_index(
             "filename": document["title"] or "uploaded-file",
             "rebuild": True,
             "operation": "REBUILD_INDEX",
+            "trace_id": trace_id,
         }
     )
     except Exception:
@@ -224,6 +228,129 @@ def rebuild_document_index(
         "permission_tags": document["permission_tags"],
         "status": "PENDING",
         "operation": "REBUILD_INDEX",
+    }
+
+
+def release_document_operation_lock(
+    *,
+    document_id: str,
+    tenant_id: str,
+    stale_lock_minutes: int = 30,
+    actor_id: str = "system",
+    request_source: str = "api",
+) -> dict[str, object]:
+    stale_lock_minutes = max(1, stale_lock_minutes)
+    with psycopg.connect(build_psycopg_url(), row_factory=dict_row) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    tenant_id,
+                    status,
+                    operation_status,
+                    operation_lock_id,
+                    operation_started_at
+                FROM document
+                WHERE id = %s
+                  AND tenant_id = %s
+                FOR UPDATE
+                """,
+                (document_id, tenant_id),
+            )
+            document = cursor.fetchone()
+            if document is None:
+                raise AppError("DOCUMENT_NOT_FOUND", "Document not found", status_code=404)
+            if document["status"] == "DELETED":
+                raise AppError("DOCUMENT_DELETED", "Document is deleted", status_code=409)
+            if document["operation_status"] is None or document["operation_lock_id"] is None:
+                raise AppError("DOCUMENT_OPERATION_LOCK_NOT_FOUND", "Document operation lock not found", status_code=404)
+
+            cursor.execute(
+                """
+                SELECT now() - operation_started_at AS lock_age
+                FROM document
+                WHERE id = %s
+                  AND tenant_id = %s
+                  AND operation_started_at < now() - (%s::text || ' minutes')::interval
+                """,
+                (document_id, tenant_id, stale_lock_minutes),
+            )
+            stale_row = cursor.fetchone()
+            if stale_row is None:
+                raise AppError("DOCUMENT_OPERATION_LOCK_NOT_STALE", "Document operation lock is not stale", status_code=409)
+
+            lock_id = str(document["operation_lock_id"])
+            cursor.execute(
+                """
+                SELECT id, status
+                FROM cleaning_job
+                WHERE id = %s
+                  AND status IN ('PENDING', 'RUNNING', 'RETRYING')
+                LIMIT 1
+                """,
+                (lock_id,),
+            )
+            active_job = cursor.fetchone()
+            if active_job is not None:
+                raise AppError("DOCUMENT_OPERATION_LOCK_JOB_ACTIVE", "Document operation lock job is still active", status_code=409)
+
+            previous_status = document["operation_status"]
+            previous_started_at = document["operation_started_at"]
+            cursor.execute(
+                """
+                UPDATE document
+                SET
+                    operation_status = NULL,
+                    operation_lock_id = NULL,
+                    operation_started_at = NULL,
+                    updated_at = now()
+                WHERE id = %s
+                  AND tenant_id = %s
+                  AND operation_lock_id = %s
+                """,
+                (document_id, tenant_id, lock_id),
+            )
+            cursor.execute(
+                """
+                INSERT INTO document_audit_event (
+                    id,
+                    tenant_id,
+                    document_id,
+                    job_id,
+                    operation,
+                    actor_id,
+                    request_source,
+                    metadata
+                )
+                VALUES (%s, %s, %s, %s, 'DOCUMENT_OPERATION_LOCK_RELEASED', %s, %s, %s)
+                """,
+                (
+                    str(uuid4()),
+                    tenant_id,
+                    document_id,
+                    lock_id,
+                    actor_id,
+                    request_source,
+                    Jsonb(
+                        {
+                            "previous_operation_status": previous_status,
+                            "previous_operation_lock_id": lock_id,
+                            "previous_operation_started_at": (
+                                previous_started_at.isoformat() if previous_started_at is not None else None
+                            ),
+                            "stale_lock_minutes": stale_lock_minutes,
+                        }
+                    ),
+                ),
+            )
+    return {
+        "document_id": document_id,
+        "tenant_id": tenant_id,
+        "released": True,
+        "previous_operation_status": previous_status,
+        "previous_operation_lock_id": lock_id,
+        "stale_lock_minutes": stale_lock_minutes,
     }
 
 

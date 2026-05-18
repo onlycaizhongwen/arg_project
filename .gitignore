@@ -9,3 +9,11 @@ __pycache__/
 .env
 .env.*
 !.env.example
+!.env.local.example
+!.env.test.example
+!.env.prod.example
+backups/
+node_modules/
+dist/
+.npm-cache/
+*.tsbuildinfo

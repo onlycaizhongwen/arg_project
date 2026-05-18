@@ -2,6 +2,10 @@ from functools import lru_cache
 from os import getenv
 
 
+def _get_bool(name: str, default: str) -> bool:
+    return getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
 class Settings:
     app_name: str = getenv("APP_NAME", "rag-cleaning-api")
     app_version: str = getenv("APP_VERSION", "0.1.0")
@@ -39,6 +43,13 @@ class Settings:
     rerank_model: str = getenv("RERANK_MODEL", "mock-reranker")
     rerank_base_url: str = getenv("RERANK_BASE_URL", "")
     rerank_timeout_seconds: float = float(getenv("RERANK_TIMEOUT_SECONDS", "5"))
+    auth_context_mode: str = getenv("AUTH_CONTEXT_MODE", "local").strip().lower()
+    auth_trusted_header_enabled: bool = _get_bool("AUTH_TRUSTED_HEADER_ENABLED", "true")
+    auth_require_actor: bool = _get_bool("AUTH_REQUIRE_ACTOR", "false")
+    auth_require_tenant: bool = _get_bool("AUTH_REQUIRE_TENANT", "false")
+    auth_default_request_source: str = getenv("AUTH_DEFAULT_REQUEST_SOURCE", "api")
+    auth_default_permission_tags: str = getenv("AUTH_DEFAULT_PERMISSION_TAGS", "public")
+    auth_empty_permission_policy: str = getenv("AUTH_EMPTY_PERMISSION_POLICY", "public_only").strip().lower()
 
     def validate(self) -> None:
         required = {
@@ -77,6 +88,24 @@ class Settings:
             raise RuntimeError("RERANK_BASE_URL is required when RERANK_PROVIDER=external")
         if self.rerank_timeout_seconds <= 0:
             raise RuntimeError("RERANK_TIMEOUT_SECONDS must be greater than 0")
+        if self.auth_context_mode not in {"local", "gateway", "iam"}:
+            raise RuntimeError("AUTH_CONTEXT_MODE must be one of local, gateway, iam")
+        if self.auth_empty_permission_policy not in {"public_only", "deny"}:
+            raise RuntimeError("AUTH_EMPTY_PERMISSION_POLICY must be one of public_only, deny")
+        if self.auth_context_mode in {"gateway", "iam"} and not self.auth_trusted_header_enabled:
+            raise RuntimeError("AUTH_TRUSTED_HEADER_ENABLED must be true when AUTH_CONTEXT_MODE is gateway or iam")
+        if not self.auth_default_request_source.strip():
+            raise RuntimeError("AUTH_DEFAULT_REQUEST_SOURCE must not be empty")
+        if not _parse_csv(self.auth_default_permission_tags):
+            raise RuntimeError("AUTH_DEFAULT_PERMISSION_TAGS must contain at least one tag")
+
+    @property
+    def auth_default_permission_tag_list(self) -> list[str]:
+        return _parse_csv(self.auth_default_permission_tags)
+
+
+def _parse_csv(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 @lru_cache

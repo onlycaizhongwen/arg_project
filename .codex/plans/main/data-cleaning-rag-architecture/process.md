@@ -2,9 +2,9 @@
 
 - 任务需求：基于用户提供的“数据清洗与 RAG 服务架构”图，先完成规划、需求分析、技术选型与设计。
 - 关键决策：主题命名为 `data-cleaning-rag-architecture`，版本使用 `docs/codex/v1`。
-- 当前阶段：阶段 4 P4-5 异常迹象与监控指标已完成，下一步进入 P4-3 批量治理任务。
-- 已完成产物：requirements、design、plan、status、任务记录、API/Worker 骨架、本地基础设施配置、数据库初始化脚本、上传入库与 Worker 消费处理代码、Qdrant 检索接口代码、infra 运行说明、自动化冒烟脚本、可选 BGE reranker 服务与验证脚本。
-- 剩余工作：推进批量治理和生产模型评测。
+- 当前阶段：Vue 对客演示控制台 MVP 已完成。
+- 已完成产物：requirements、design、plan、status、任务记录、API/Worker 骨架、本地基础设施配置、数据库初始化脚本、上传入库与 Worker 消费处理代码、Qdrant 检索接口代码、infra 运行说明、自动化冒烟脚本、可选 BGE reranker 服务与验证脚本、PoC 联调说明、部署运维说明、问题排查手册、Prometheus 指标出口、滞留锁释放接口、批量失败项重试与取消接口、中文评测集、轻量压测报告、备份 dry-run 脚本和发布检查清单。
+- 剩余工作：执行 P7-3 客户真实语料评测包，并可在控制台中继续扩展评测看板。
 - 重要发现：仓库已具备统一 Python 技术栈骨架，Embedding 采用线上通义、本地 BGE、mock 兜底的兼容适配策略；本地 BGE rerank 已可用，但镜像站预热和镜像体积还需后续优化。
 
 ## 步骤列表
@@ -196,6 +196,114 @@
   - 实现内容：新增 `search_diagnostic_event` 表记录 `RERANK_DEGRADED`；诊断概览汇总 cleaning job 状态/失败率、RabbitMQ ready/consumer、document 操作锁滞留、rerank provider 与近期降级次数，并输出 `JOB_BACKLOG`、`JOB_FAILURES_RECENT`、`DOCUMENT_LOCK_STALE`、`RERANK_DEGRADED` 等统一 signals。
   - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`scripts\db-migrate.ps1`、`scripts/diagnostics-test.ps1`、`scripts/rerank-degrade-test.ps1`、`scripts/smoke-test.ps1`、`scripts/phase2-eval.ps1` 均通过；`scripts/phase2-eval.ps1` 已改为默认使用唯一知识库，避免固定 `kb-phase2` 多轮污染。
   - 下一步：实现 P4-3 批量治理任务，先做批量重建计划、item 拆分、状态查询和统计输出。
+- [v] 实现 P4-3 批量治理任务首版。
+  - 当前产物：`services/api/app/api/document_batches.py`、`services/api/app/services/document_batch_service.py`、`services/api/migrations/versions/0011_document_operation_batch.py`、`scripts/document-batch-rebuild-test.ps1`。
+  - 实现内容：新增批量重建任务创建、批量任务查询、批量 item 查询；新增 `document_operation_batch` 和 `document_operation_batch_item`；首版按 API 侧编排逐个复用已有 document rebuild 能力，并记录 batch item 提交审计。
+  - 验证结果：`python -m compileall services\api\app services\worker\app` 通过；`docker compose -f infra\docker-compose.yml config --quiet` 通过；API 镜像重建通过；`scripts\db-migrate.ps1` 升级到 `0011_doc_batch`；`scripts/document-batch-rebuild-test.ps1` 通过，2 个文档批量重建后仍可检索；`scripts/smoke-test.ps1`、`scripts/diagnostics-test.ps1`、`scripts/document-operation-lock-test.ps1` 通过；`scripts/phase2-eval.ps1` 在 `local_bge + mock rerank` 下 15/15 通过。
+  - 重要发现：默认 `mock` embedding 下 phase2 的 semantic-only 样例会波动，本轮切换到本地 `bge-m3` 后通过，说明后续模型评测需要显式记录 provider 配置。
+  - 下一步：进入 P4-6 生产模型评测，形成可比较的模型质量、延迟和降级报告。
+- [v] 实现 P4-6 生产模型评测首版。
+  - 当前产物：`samples/queries/model-eval-queries.json`、`scripts/model-eval.ps1`、`docs/codex/v1/trace/data-cleaning-rag-model-eval-report.json`、`docs/codex/v1/trace/data-cleaning-rag-model-eval-report.md`。
+  - 实现内容：脚本可切换 Compose 模型配置，复用同一批 demo 文档和查询集，比较 `mock`、`local_bge/bge-m3` 与可选 DashScope `text-embedding-v4` 的命中率、P50/P95 检索延迟、rerank 降级和查询明细。
+  - 验证结果：`scripts/model-eval.ps1` 已执行完成；本轮结果为 `mock` 8/10、`local_bge` 10/10、DashScope `text-embedding-v4` 10/10；当前样例下 `local_bge` P95 约 259.89ms，DashScope P95 约 306.82ms。
+  - 重要发现：`mock` 不适合作为语义质量判断依据；`local_bge` 可作为本地演示和离线验证基线；DashScope 已能进入同一评测框架，后续可扩大中文真实语料集。
+  - 下一步：进入 Phase 5 对客 PoC 联调包，输出客户可执行的联调说明、演示脚本和部署运维说明。
+- [v] 规划 Phase 5 对客 PoC 联调包。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase5-poc-plan.md`。
+  - 规划内容：PoC 联调说明、部署运维说明、对客演示脚本、问题排查手册、对客材料一致性检查。
+  - 关键决策：优先执行 P5-1 联调说明和 P5-2 演示脚本，让当前工程先具备对客演示与联调入口。
+  - 下一步：新增 `数据清洗与RAG服务PoC联调说明.md` 和 `scripts/poc-demo.ps1`，并用 `local_bge + mock rerank` 跑通演示。
+- [v] 执行 Phase 5 P5-1/P5-2。
+  - 当前产物：`docs/codex/v1/plans/数据清洗与RAG服务PoC联调说明.md`、`scripts/poc-demo.ps1`。
+  - 实现内容：PoC 联调说明覆盖环境准备、模型配置、启动迁移、标准演示脚本、手工接口用例和验收记录；演示脚本串联健康检查、上传、检索、更新、重建、批量重建和诊断概览。
+  - 验证结果：`scripts/poc-demo.ps1` 已在 `local_bge/bge-m3 + mock rerank` 下通过；输出 `document_id=5a513dd0-f08d-4573-aeab-d87575b32d58`、`batch_id=320c7c2b-2e6e-4719-8c0e-99dc877504f3`，批量重建 2/2 成功，诊断状态 `ok`。
+  - 下一步：执行 P5-3 部署运维说明和 P5-4 问题排查手册。
+- [v] 执行 Phase 5 P5-3/P5-4/P5-5。
+  - 当前产物：`docs/codex/v1/plans/数据清洗与RAG服务部署运维说明.md`、`docs/codex/v1/plans/数据清洗与RAG服务问题排查手册.md`。
+  - 实现内容：部署运维说明覆盖组件职责、环境变量、国内镜像源、启动停止、迁移、健康检查、日志、备份和清理；问题排查手册覆盖 API、Docker 镜像、PostgreSQL、RabbitMQ、Worker、MinIO、Qdrant、Embedding 维度、本地 BGE、DashScope、rerank 降级、document 锁滞留和批量重建异常。
+  - 一致性检查：实际路由与 API 契约对齐；脚本清单与 `scripts/*.ps1` 对齐；已修正 API 契约中过期的人工重试边界描述，并更新阶段 5 计划状态。
+  - 验证结果：文档变更为主，未新增脚本；后续已执行 `git diff --check`。
+  - 下一步：进入 Phase 6 生产部署与运维加固规划，优先拆真实鉴权、生产监控告警、锁超时释放、批量任务取消/重试、评测集扩展和容量压测。
+- [v] 规划 Phase 6 生产部署与运维加固。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase6-production-hardening-plan.md`。
+  - 规划内容：P6-1 环境配置分层与生产模板、P6-2 认证上下文与操作人注入、P6-3 结构化日志与 trace_id、P6-4 监控指标出口、P6-5 锁超时释放与治理闭环、P6-6 批量治理增强、P6-7 评测集扩展与容量压测、P6-8 备份恢复与发布流程。
+  - 关键决策：优先执行 P6-1，因为它改动小、风险低，并能给后续鉴权、监控、模型和生产部署提供清晰配置边界。
+  - 下一步：新增 `.env.local.example`、`.env.test.example`、`.env.prod.example`，并更新部署运维说明。
+- [v] 规划 Phase 6 P6-1 环境配置分层。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase6-p6-1-env-plan.md`。
+  - 规划内容：明确 `.env.local.example`、`.env.test.example`、`.env.prod.example` 的配置目标、字段差异、文档更新范围、验证命令、风险控制和完成标准。
+  - 下一步：按 P6-1 计划新增三份环境模板，并更新 `数据清洗与RAG服务部署运维说明.md`。
+- [v] 执行 Phase 6 P6-1 环境配置分层。
+  - 当前产物：`.env.local.example`、`.env.test.example`、`.env.prod.example`、更新后的 `.gitignore` 和 `docs/codex/v1/plans/数据清洗与RAG服务部署运维说明.md`。
+  - 实现内容：新增本地、测试、生产三份环境模板；本地模板推荐 `local_bge/bge-m3 + mock rerank`；测试模板使用客户内网 registry、中间件和模型服务占位符；生产模板仅保留密钥管理占位符，并预留后续认证、日志、监控变量；部署运维说明补充分环境模板选择、敏感信息管理、镜像源覆盖和测试/生产配置原则。
+  - 验证结果：`.env.local.example` 未被 git ignore；`docker compose -f infra/docker-compose.yml config --quiet` 已执行；`git diff --check` 已执行。
+  - 下一步：进入 P6-2 认证上下文与操作人注入，优先设计 Header 兼容方案并保持现有 PoC 参数兼容。
+- [v] 执行 Phase 6 P6-2 请求上下文 Header 注入。
+  - 当前产物：`services/api/app/core/request_context.py`、更新后的 `services/api/app/api/ingestion.py`、`documents.py`、`jobs.py`、`document_batches.py`、`search.py`、`scripts/request-context-test.ps1`、`docs/codex/v1/plans/data-cleaning-rag-api-contract.md`。
+  - 实现内容：新增请求上下文解析，支持 `X-Tenant-Id`、`X-Actor-Id`、`X-Request-Source`、`X-Permission-Tags`、`X-Trace-Id`；上传、文档治理、审计查询、job retry、批量重建和检索入口均支持 Header 覆盖，同时保留原 query/body 参数兼容；检索中 `X-Permission-Tags` 作为权限上下文，不改写文档自身 `permission_tags`。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`powershell` 脚本语法检查已通过；API 镜像已重建并重启；`scripts/request-context-test.ps1`、`scripts/smoke-test.ps1`、`scripts/permission-test.ps1` 均通过。
+  - 下一步：进入 P6-3 结构化日志与 trace_id 串联，让当前已解析的 `X-Trace-Id` 进入日志、MQ 消息和错误响应。
+- [v] 执行 Phase 6 P6-3 结构化日志与 trace_id 串联。
+  - 当前产物：更新后的 `services/api/app/main.py`、`services/api/app/core/request_context.py`、`services/api/app/core/errors.py`、API 发布 MQ 的各服务、`services/worker/app/consumers/cleaning_consumer.py`、`scripts/request-context-test.ps1`。
+  - 实现内容：API middleware 读取或生成 `trace_id`，响应头回传 `X-Trace-Id`；统一错误响应包含 `trace_id`；上传、更新、重建、retry、批量重建 MQ 消息携带 `trace_id`；Worker 输出包含 `trace_id`、`job_id`、`document_id`、`document_version_id`、`operation` 的 JSON 结构化日志。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`powershell` 脚本语法检查已通过；API/Worker 镜像已重建并重启；`scripts/request-context-test.ps1` 已通过；API/Worker 容器日志已确认同一 `trace_id` 可串联。
+  - 下一步：进入 P6-4 监控指标出口，基于 diagnostics 聚合输出可采集指标。
+- [v] 执行 Phase 6 P6-4 监控指标出口。
+  - 当前产物：`services/api/app/api/metrics.py`、`services/api/app/core/api_metrics.py`、更新后的 `services/api/app/main.py`、`scripts/metrics-test.ps1`、更新后的 API 契约和部署运维说明。
+  - 实现内容：新增 `GET /api/v1/metrics`，以 Prometheus text format 输出 cleaning job 状态/失败率、RabbitMQ 队列、document 操作锁、rerank 降级指标；API middleware 记录进程内请求计数和 5xx 错误计数；部署运维说明补充采集入口和告警建议。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`powershell` 脚本语法检查已通过；API 镜像已重建并重启；`scripts/metrics-test.ps1`、`scripts/diagnostics-test.ps1` 均通过；`git diff --check` 仅提示 LF/CRLF 换行转换 warning，无空白错误。
+  - 下一步：进入 P6-5 锁超时释放与治理闭环。
+- [v] 执行 Phase 6 P6-5 锁超时释放与治理闭环。
+  - 当前产物：更新后的 `services/api/app/api/documents.py`、`services/api/app/services/document_service.py`、`scripts/document-lock-release-test.ps1`、更新后的 API 契约和部署运维说明。
+  - 实现内容：新增 `POST /api/v1/documents/{document_id}/locks/release`，仅释放超过阈值且关联 job 不处于 `PENDING`、`RUNNING`、`RETRYING` 的滞留锁；释放成功写入 `DOCUMENT_OPERATION_LOCK_RELEASED` 审计事件。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`powershell` 脚本语法检查已通过；API 镜像已重建并重启；`scripts/document-lock-release-test.ps1`、`scripts/document-operation-lock-test.ps1`、`scripts/diagnostics-test.ps1`、`scripts/smoke-test.ps1` 均通过；`git diff --check` 仅提示 LF/CRLF 换行转换 warning，无空白错误。
+  - 下一步：进入 P6-6 批量治理增强。
+- [v] 执行 Phase 6 P6-6 批量治理增强。
+  - 当前产物：更新后的 `services/api/app/api/document_batches.py`、`services/api/app/services/document_batch_service.py`、`scripts/document-batch-retry-test.ps1`、更新后的 API 契约、部署运维说明和问题排查手册。
+  - 实现内容：新增失败 item 重试接口和批量取消接口；重试只处理当前失败 item，已成功 item 不重复提交；取消只处理 `PENDING` item；批量 item 明细支持 `status` 过滤和 `total_count`。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、`powershell` 脚本语法检查已通过；API 镜像已重建并重启；`scripts/document-batch-retry-test.ps1`、`scripts/document-batch-rebuild-test.ps1`、`scripts/smoke-test.ps1`、`scripts/diagnostics-test.ps1` 均通过；`git diff --check` 仅提示 LF/CRLF 换行转换 warning，无空白错误。
+  - 下一步：进入 P6-7 评测集扩展与容量压测。
+- [v] 执行 Phase 6 P6-7 评测集扩展与容量压测。
+  - 当前产物：`samples/documents/demo-zh/`、`samples/queries/model-eval-queries-zh.json`、更新后的 `scripts/model-eval.ps1`、`scripts/search-load-test.ps1`、`docs/codex/v1/trace/data-cleaning-rag-model-eval-zh-report.*`、`docs/codex/v1/trace/data-cleaning-rag-load-test-report.*`。
+  - 实现内容：新增中文业务样例和分类查询；模型评测输出 MRR、Recall@K、P50/P95/P99、分类汇总和 rerank 分数覆盖；轻量压测输出上传吞吐、搜索 QPS 和搜索延迟分位。
+  - 验证结果：`scripts/model-eval.ps1 -DocumentsDir samples\documents\demo-zh -QueriesFile samples\queries\model-eval-queries-zh.json -SkipMock` 已生成 local_bge 与 DashScope 对比报告；`scripts/search-load-test.ps1 -UploadCount 2 -SearchCount 8 -Concurrency 2` 已通过，搜索失败数 0；API/Worker 已切回 `local_bge/bge-m3 + mock rerank`；`scripts/smoke-test.ps1`、`scripts/diagnostics-test.ps1` 均通过；`git diff --check` 仅提示 LF/CRLF 换行转换 warning，无空白错误。
+  - 下一步：进入 P6-8 备份恢复与发布流程。
+- [v] 执行 Phase 6 P6-8 备份恢复与发布流程。
+  - 当前产物：`scripts/backup-dry-run.ps1`、`docs/codex/v1/plans/数据清洗与RAG服务发布检查清单.md`、更新后的 `docs/codex/v1/plans/数据清洗与RAG服务部署运维说明.md`、`docs/codex/v1/trace/data-cleaning-rag-backup-dry-run-report.md`。
+  - 实现内容：新增非破坏式备份演练脚本，覆盖 PostgreSQL `pg_dump`、MinIO bucket 摘要检查和 Qdrant collections 检查；发布检查清单补充冻结项、镜像 tag、发布前命令、备份恢复、Alembic 迁移原则、发布步骤、回滚原则和生产审批边界；`backups/` 已加入 `.gitignore`，避免 SQL 备份误提交。
+  - 验证结果：`scripts/backup-dry-run.ps1` 已通过并生成报告；`docker compose -f infra\docker-compose.yml config --quiet`、`python -m compileall services\api\app services\worker\app` 已在本轮收尾前通过；最终回归验证继续执行。
+  - 下一步：进入 Phase 6 收尾 trace 审查与提交前验证。
+- [v] 补充 Phase 6 一致性 trace 审查。
+  - 当前产物：`docs/codex/v1/trace/data-cleaning-rag-phase6-trace.md`。
+  - 审查结论：P6-1 到 P6-8 首版闭环已完成；剩余风险集中在真实 IAM/SSO、生产级恢复演练、正式 rerank 容量、监控平台接入和 CI/CD 发布自动化。
+  - 验证结果：本轮已通过 backup dry-run、diagnostics、metrics、smoke、compileall、Compose config 和 git diff 检查。
+  - 下一步：进入 Phase 7 规划或提交前整理。
+- [v] 规划 Phase 7 生产就绪路线。
+  - 当前产物：`docs/codex/v1/plans/data-cleaning-rag-phase7-production-readiness-plan.md`。
+  - 规划内容：P7-1 生产认证与授权、P7-2 正式 rerank 服务接入与容量基线、P7-3 客户真实语料评测包、P7-4 隔离恢复演练、P7-5 CI/CD 发布流水线、P7-6 测试/生产部署形态设计。
+  - 关键决策：优先执行 P7-1，因为认证和权限是生产边界入口，会影响审计、检索过滤、对客接口说明和部署配置。
+  - 下一步：输出 P7-1 认证授权设计和实施计划，在不破坏 PoC Header 兼容的前提下补生产模式校验。
+- [v] 设计并规划 P7-1 生产认证与授权接入。
+  - 当前产物：`docs/codex/v1/designs/data-cleaning-rag-phase7-auth-design.md`、`docs/codex/v1/plans/data-cleaning-rag-phase7-p7-1-auth-plan.md`。
+  - 设计内容：定义 local/gateway/iam 三种认证模式、可信 Header 字段契约、权限标签执行模型、新增认证配置和错误码。
+  - 实施计划：先补配置读取和默认值，再改 `RequestContext` 校验与错误码，最后扩展 `request-context-test`、`permission-test` 和对客文档。
+  - 下一步：进入 P7-1 代码实现。
+- [v] 实现 P7-1 生产认证与授权接入首版。
+  - 当前产物：更新后的 `services/api/app/core/config.py`、`services/api/app/core/request_context.py`、`services/api/app/core/errors.py`、`services/api/app/main.py`、`infra/docker-compose.yml`、三份 `.env.*.example`、API 契约、部署运维说明、问题排查手册，以及 `docs/codex/v1/trace/data-cleaning-rag-phase7-auth-trace.md`。
+  - 实现内容：新增 local/gateway/iam 三种认证上下文模式；gateway/iam 模式可强制校验 `X-Tenant-Id` 和 `X-Actor-Id`；新增权限标签兜底和 deny 策略；local 模式保持现有 PoC 兼容。
+  - 验证结果：`python -m compileall services\api\app services\worker\app`、`docker compose -f infra\docker-compose.yml config --quiet`、API 镜像重建和重启、`scripts/request-context-test.ps1`、`scripts/permission-test.ps1`、`scripts/smoke-test.ps1`、`scripts/diagnostics-test.ps1`、`scripts/metrics-test.ps1` 均通过；gateway one-off 容器验证缺少身份返回 `AUTH_CONTEXT_MISSING`，完整 Header 可解析；`git diff --check` 仅 LF/CRLF warning。
+  - 下一步：进入 P7-2 正式 rerank 服务接入与容量基线。
+- [v] 实现 P7-2 正式 rerank 服务接入与容量基线首版。
+  - 当前产物：`scripts/model-eval.ps1`、`scripts/search-load-test.ps1`、`docs/codex/v1/plans/data-cleaning-rag-phase7-p7-2-rerank-capacity-plan.md`、`docs/codex/v1/trace/data-cleaning-rag-rerank-capacity-report.md`，以及最新 `data-cleaning-rag-model-eval-report.*`、`data-cleaning-rag-load-test-report.*`。
+  - 实现内容：模型评估脚本新增 `-IncludeExternalRerank` 和 external rerank 参数；轻量压测脚本新增 `-RerankEnabled`、`-RerankSize`，并输出 rerank provider、降级次数和平均分数覆盖。
+  - 验证结果：reranker profile 已启动，`/health` 返回 ok；`scripts/bge-rerank-test.ps1` 通过，`rerank_provider=external`、`rerank_degraded=false`；`local_bge + external rerank` 模型评估 P50/P95 为 480.10ms/708.45ms，轻量压测 QPS 1.852、P50 521.23ms、P95 608.25ms、0 失败、0 降级。
+  - 下一步：进入 P7-3 客户真实语料评测包，重点验证客户语料下 rerank 是否带来质量收益。
+
+- [v] 实现 Vue 对客演示控制台 MVP。
+  - 当前产物：`services/console` 前端工程、`services/console/README.md`、`docs/codex/v1/plans/data-cleaning-rag-demo-console-plan.md`。
+  - 实现内容：新增 Vue 3 + Vite + TypeScript 控制台，覆盖演示上下文、API/队列/rerank 状态、文件上传、job 轮询、RAG 检索、rerank provider 切换、rerank 开关、命中片段和诊断摘要；Vite 代理 `/health` 与 `/api/*` 到 FastAPI；新增 `runtime-config/rerank` 后端接口支持测试人员在页面直接切换 `disabled/mock/external`。
+  - 验证结果：`npm install --cache .\.npm-cache --registry=https://registry.npmmirror.com`、`npm run build` 通过；`http://localhost:5173` 返回 200；`http://localhost:5173/health` 和 `/api/v1/diagnostics/overview` 经 Vite 代理访问成功；`scripts/rerank-runtime-config-test.ps1` 通过并恢复回 mock。
+  - 下一步：进入 P7-3 客户真实语料评测包，后续可把客户语料评测报告接入控制台。
 
 ## 研究发现
 

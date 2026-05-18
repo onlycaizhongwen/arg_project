@@ -1,8 +1,14 @@
 from typing import Literal
 
 from pydantic import BaseModel, Field
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.core.request_context import (
+    RequestContext,
+    get_request_context,
+    resolve_permission_context,
+    resolve_tenant_id,
+)
 from app.services.search_service import search_chunks
 
 router = APIRouter()
@@ -25,12 +31,15 @@ class SearchRequest(BaseModel):
 
 
 @router.post("/search")
-def search(request: SearchRequest) -> dict[str, object]:
+def search(
+    request: SearchRequest,
+    context: RequestContext = Depends(get_request_context),
+) -> dict[str, object]:
     return search_chunks(
         query=request.query,
-        tenant_id=request.tenant_id,
+        tenant_id=resolve_tenant_id(request.tenant_id, context),
         knowledge_base_ids=request.knowledge_base_ids,
-        permission_context=request.permission_context,
+        permission_context=resolve_permission_context(request.permission_context, context),
         search_mode=request.search_mode,
         recall_size=request.recall_size,
         pre_rank_size=request.pre_rank_size,

@@ -11,6 +11,27 @@
 - 默认数据源：`default-file-source`
 - 默认知识库：`kb-default`
 
+## 请求上下文 Header
+
+Phase 6 P6-2 起，API 支持通过 Header 注入请求上下文，并保持原有 query/body 参数兼容。Header 优先级高于 query/body 中的同名语义字段。
+
+| Header | 说明 | 当前影响范围 |
+| --- | --- | --- |
+| `X-Tenant-Id` | 租户 ID | 上传、文档治理、审计查询、job retry、批量重建、检索 |
+| `X-Actor-Id` | 操作人 ID | 文档更新/删除/重建、job retry、批量重建审计 |
+| `X-Request-Source` | 请求来源 | 文档更新/删除/重建、job retry、批量重建审计 |
+| `X-Permission-Tags` | 逗号分隔权限上下文 | RAG 检索的 `permission_context` 兜底或覆盖 |
+| `X-Trace-Id` | 链路追踪 ID | API 响应头、错误响应、API 结构化日志、MQ 消息和 Worker 结构化日志 |
+
+兼容原则：
+
+- 未传 Header 时，现有 PoC 参数行为保持不变。
+- 传 `X-Actor-Id` / `X-Request-Source` 时，审计事件优先记录 Header 值。
+- 传 `X-Permission-Tags` 时，检索优先使用 Header 中的权限上下文。
+- 上传文档的 `permission_tags` 仍表示文档自身权限标签，不由 `X-Permission-Tags` 改写。
+- 未传 `X-Trace-Id` 时，API 会生成一个 trace_id，并通过响应头 `X-Trace-Id` 返回。
+- 传 `X-Trace-Id` 时，API 会原样回传，并在异步清洗消息和 Worker 日志中继续使用。
+
 ## 统一错误响应
 
 所有业务错误、参数校验错误和未捕获异常统一返回：
@@ -33,7 +54,15 @@
 | `DOCUMENT_NOT_FOUND` | 404 | 删除不存在或不属于当前租户的 document |
 | `DOCUMENT_DELETED` | 409 | 尝试更新或重建已删除的 document |
 | `DOCUMENT_OPERATION_IN_PROGRESS` | 409 | 同一 document 已有更新、删除或重建操作正在执行 |
+| `DOCUMENT_OPERATION_LOCK_NOT_FOUND` | 404 | 文档当前没有可释放的操作锁 |
+| `DOCUMENT_OPERATION_LOCK_NOT_STALE` | 409 | 文档操作锁未超过释放阈值 |
+| `DOCUMENT_OPERATION_LOCK_JOB_ACTIVE` | 409 | 操作锁关联的 job 仍处于运行保护状态 |
 | `DOCUMENT_VERSION_NOT_INDEXED` | 409 | 尝试重建尚无 `INDEXED` 版本的 document |
+| `BATCH_FILTER_REQUIRED` | 400 | 创建批量任务时未提供知识库、数据源或文档 ID 过滤条件 |
+| `BATCH_NO_DOCUMENTS` | 404 | 批量任务过滤条件下没有可处理的已索引文档 |
+| `BATCH_NOT_FOUND` | 404 | 查询不存在的批量治理任务 |
+| `BATCH_NO_FAILED_ITEMS` | 404 | 批量任务中没有可重试的失败 item |
+| `BATCH_OPERATION_UNSUPPORTED` | 409 | 当前批量任务类型不支持该治理操作 |
 | `EMPTY_FILE` | 400 | 上传文件为空 |
 | `VALIDATION_ERROR` | 422 | 请求参数类型或结构不合法 |
 | `INTERNAL_ERROR` | 500 | 依赖服务异常、模型调用异常、未捕获异常 |
@@ -88,6 +117,43 @@ curl.exe -s http://localhost:8000/health
 
 ```powershell
 curl.exe -s "http://localhost:8000/api/v1/diagnostics/overview?tenant_id=default&window_minutes=60&stale_lock_minutes=30"
+```
+
+## 监控指标
+
+### `GET /api/v1/metrics`
+
+输出 Phase 6 P6-4 的 Prometheus text format 指标，复用诊断概览聚合口径，便于后续由 Prometheus、VictoriaMetrics 或客户侧 APM 网关采集。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `window_minutes` | number | 否 | `60` | 近期失败率和 rerank 降级事件统计窗口 |
+| `stale_lock_minutes` | number | 否 | `30` | document 操作锁超过该时长视为滞留 |
+
+### 指标清单
+
+| 指标 | 类型 | 说明 |
+| --- | --- | --- |
+| `rag_cleaning_job_status_count{tenant_id,status}` | gauge | cleaning job 状态分布 |
+| `rag_cleaning_job_recent_total{tenant_id}` | gauge | 统计窗口内 job 总数 |
+| `rag_cleaning_job_recent_failed{tenant_id}` | gauge | 统计窗口内失败 job 数 |
+| `rag_cleaning_job_failure_rate{tenant_id}` | gauge | 统计窗口内失败率 |
+| `rag_cleaning_queue_available` | gauge | RabbitMQ 队列是否可读，1 表示可读 |
+| `rag_cleaning_queue_ready_count` | gauge | RabbitMQ ready 消息数 |
+| `rag_cleaning_queue_consumer_count` | gauge | RabbitMQ consumer 数 |
+| `rag_cleaning_document_lock_active_count{tenant_id}` | gauge | 当前 document 操作锁数量 |
+| `rag_cleaning_document_lock_stale_count{tenant_id}` | gauge | 当前滞留 document 操作锁数量 |
+| `rag_cleaning_rerank_degraded_recent_count{tenant_id,provider,model}` | gauge | 统计窗口内 rerank 降级次数 |
+| `rag_api_request_total{method,path,status_code}` | counter | API 请求计数，当前为进程内计数 |
+| `rag_api_request_error_total{method,path,status_code}` | counter | API 5xx 错误计数，当前为进程内计数 |
+
+### curl
+
+```powershell
+curl.exe -s "http://localhost:8000/api/v1/metrics?tenant_id=default&window_minutes=60&stale_lock_minutes=30"
 ```
 
 ## 文件上传接入
@@ -344,6 +410,198 @@ curl.exe -s -X PUT "http://localhost:8000/api/v1/documents/<document_id>/version
 
 ```powershell
 curl.exe -s -X POST "http://localhost:8000/api/v1/documents/<document_id>/rebuild?tenant_id=default"
+```
+
+## 释放滞留文档操作锁
+
+### `POST /api/v1/documents/{document_id}/locks/release`
+
+安全释放 document 操作锁。该接口只允许释放超过阈值的滞留锁，并且会检查锁关联的 cleaning job 是否仍处于 `PENDING`、`RUNNING` 或 `RETRYING`，避免误释放正常运行任务。释放成功后写入 `DOCUMENT_OPERATION_LOCK_RELEASED` 审计事件。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `stale_lock_minutes` | number | 否 | `30` | 超过该分钟数才允许释放 |
+| `actor_id` | string | 否 | `system` | 操作者 ID，写入审计事件 |
+| `request_source` | string | 否 | `api` | 请求来源，写入审计事件 |
+
+### 响应字段
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `document_id` | string | 文档 ID |
+| `tenant_id` | string | 租户 ID |
+| `released` | boolean | 是否已释放 |
+| `previous_operation_status` | string | 释放前操作状态 |
+| `previous_operation_lock_id` | string | 释放前锁 ID |
+| `stale_lock_minutes` | number | 本次使用的释放阈值 |
+
+### curl
+
+```powershell
+curl.exe -s -X POST "http://localhost:8000/api/v1/documents/<document_id>/locks/release?tenant_id=default&stale_lock_minutes=30"
+```
+
+## 批量重建文档索引
+
+### `POST /api/v1/document-batches/rebuild`
+
+创建批量重建索引任务。首版采用 API 侧编排：先按知识库、数据源或指定 document 列表筛选已索引文档，再逐个复用单文档 `POST /api/v1/documents/{document_id}/rebuild` 能力创建重建 job。单个文档被锁定或不满足条件时会记录为 item 失败或跳过，不影响其他 item。
+
+### 请求字段
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `knowledge_base_id` | string/null | 否 | 空 | 按知识库筛选文档 |
+| `source_id` | string/null | 否 | 空 | 按数据源筛选文档 |
+| `document_ids` | array[string]/null | 否 | 空 | 指定文档 ID 列表 |
+| `actor_id` | string | 否 | `system` | 操作人 ID，写入审计 |
+| `request_source` | string | 否 | `api` | 请求来源，写入审计 |
+| `limit` | number | 否 | `100` | 首版单批最多处理数量，范围 1-500 |
+
+`knowledge_base_id`、`source_id`、`document_ids` 至少需要提供一个。
+
+### 请求示例
+
+```json
+{
+  "tenant_id": "default",
+  "knowledge_base_id": "kb-demo",
+  "actor_id": "operator",
+  "request_source": "console",
+  "limit": 100
+}
+```
+
+### 响应重点字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `batch_id` | 批量任务 ID |
+| `operation` | 当前固定为 `REBUILD_INDEX` |
+| `status` | `RUNNING`、`SUCCEEDED`、`PARTIAL_SUCCEEDED`、`FAILED`、`CANCELED` |
+| `filters` | 本次批量任务使用的筛选条件 |
+| `summary.total_count` | 批量 item 总数 |
+| `summary.running_count` | 仍在运行的 item 数 |
+| `summary.succeeded_count` | 已成功 item 数 |
+| `summary.failed_count` | 已失败 item 数 |
+| `summary.skipped_count` | 已跳过 item 数 |
+| `summary.canceled_count` | 已取消 item 数 |
+
+### curl
+
+```powershell
+$body = @{
+  tenant_id = "default"
+  knowledge_base_id = "kb-demo"
+  actor_id = "operator"
+  request_source = "console"
+  limit = 100
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:8000/api/v1/document-batches/rebuild" -Method Post -ContentType "application/json" -Body $body
+```
+
+## 查询批量治理任务
+
+### `GET /api/v1/document-batches/{batch_id}`
+
+查询批量任务状态和汇总统计。接口会根据关联 `cleaning_job` 的最新状态动态计算 item 和 batch 状态。
+
+### curl
+
+```powershell
+curl.exe -s "http://localhost:8000/api/v1/document-batches/<batch_id>?tenant_id=default"
+```
+
+## 重试批量治理失败项
+
+### `POST /api/v1/document-batches/{batch_id}/retry-failed`
+
+对同一批次内当前动态状态为 `FAILED` 的 item 重新提交重建任务。已成功、已跳过、已取消或仍在运行的 item 不会被重复执行。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `actor_id` | string | 否 | `system` | 操作人 ID，写入审计 |
+| `request_source` | string | 否 | `api` | 请求来源，写入审计 |
+
+### 响应重点字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `retried_count` | 本次成功重新提交的失败 item 数 |
+| `summary` | 重试后的批量任务汇总 |
+
+### curl
+
+```powershell
+curl.exe -s -X POST "http://localhost:8000/api/v1/document-batches/<batch_id>/retry-failed?tenant_id=default&actor_id=operator&request_source=console"
+```
+
+## 取消批量治理任务
+
+### `POST /api/v1/document-batches/{batch_id}/cancel`
+
+取消同一批次内尚未提交的 `PENDING` item。已经提交或已完成的 item 不回滚；该能力用于后续异步调度或人工构造批次的治理场景。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `actor_id` | string | 否 | `system` | 操作人 ID，写入审计 |
+| `request_source` | string | 否 | `api` | 请求来源，写入审计 |
+
+### 响应重点字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `canceled_items` | 本次取消的 pending item 数 |
+| `summary.canceled_count` | 批次内累计取消 item 数 |
+
+### curl
+
+```powershell
+curl.exe -s -X POST "http://localhost:8000/api/v1/document-batches/<batch_id>/cancel?tenant_id=default&actor_id=operator&request_source=console"
+```
+
+## 查询批量治理明细
+
+### `GET /api/v1/document-batches/{batch_id}/items`
+
+分页查询批量任务 item，每个 item 对应一个文档重建操作。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `tenant_id` | string | 否 | `default` | 租户 ID |
+| `status` | string | 否 | 无 | 按 item 存储状态过滤，例如 `FAILED`、`CANCELED` |
+| `limit` | number | 否 | `50` | 返回条数，范围 1-200 |
+| `offset` | number | 否 | `0` | 分页偏移 |
+
+### 响应重点字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `total_count` | 当前过滤条件下的 item 总数 |
+| `items[].document_id` | 文档 ID |
+| `items[].document_version_id` | 当前重建版本 ID |
+| `items[].job_id` | 对应的 cleaning job ID |
+| `items[].status` | 动态状态：`RUNNING`、`SUCCEEDED`、`FAILED`、`SKIPPED`、`CANCELED` |
+| `items[].job_status` | 关联 cleaning job 的原始状态 |
+| `items[].error_code` | item 创建或提交失败时的错误码 |
+
+### curl
+
+```powershell
+curl.exe -s "http://localhost:8000/api/v1/document-batches/<batch_id>/items?tenant_id=default&limit=20"
 ```
 
 ## 查询文档审计
@@ -664,6 +922,18 @@ docker compose -f infra\docker-compose.yml up -d reranker api worker
 - 同一 document 在更新任务完成前请求重建会返回 `DOCUMENT_OPERATION_IN_PROGRESS`。
 - 更新任务完成后锁释放，重建请求可继续执行。
 
+### 滞留锁释放验证
+
+```powershell
+.\scripts\document-lock-release-test.ps1
+```
+
+覆盖：
+- 未超过阈值的锁不能释放，返回 `DOCUMENT_OPERATION_LOCK_NOT_STALE`。
+- 超过阈值但关联 job 仍处于运行保护状态的锁不能释放，返回 `DOCUMENT_OPERATION_LOCK_JOB_ACTIVE`。
+- 关联 job 已失败的滞留锁可释放，并写入 `DOCUMENT_OPERATION_LOCK_RELEASED` 审计事件。
+- 释放后文档可继续发起重建。
+
 ### 人工重试验证
 
 ```powershell
@@ -690,10 +960,88 @@ docker compose -f infra\docker-compose.yml up -d reranker api worker
 - 返回 job 状态分布、RabbitMQ 队列状态、document 操作锁指标和 rerank 降级统计。
 - `signals` 以统一 code/severity/message 结构输出异常迹象。
 
+### 监控指标验证
+
+```powershell
+.\scripts\metrics-test.ps1
+```
+
+覆盖：
+- `GET /api/v1/metrics` 可返回 Prometheus text format。
+- 返回清洗 job、RabbitMQ、document 操作锁、rerank 降级和 API 请求计数指标。
+- 需要按租户区分的指标包含 `tenant_id` label。
+
+### 批量重建验证
+
+```powershell
+.\scripts\document-batch-rebuild-test.ps1
+```
+
+覆盖：
+- 上传多个文档并等待入库。
+- 按知识库创建批量重建任务。
+- 轮询批量任务直到完成。
+- 查询批量 item 明细。
+- 验证批量重建后文档仍可检索。
+
+### 批量治理增强验证
+
+```powershell
+.\scripts\document-batch-retry-test.ps1
+```
+
+覆盖：
+- 同一批次内只重试失败 item，已成功 item 不重复提交。
+- 重试成功后批次汇总可恢复为 `SUCCEEDED`。
+- 取消批次时仅取消 `PENDING` item，已完成 item 保持原状态。
+- 批量 item 明细支持 `status` 过滤并返回 `total_count`。
+
+### 请求上下文 Header 验证
+
+```powershell
+.\scripts\request-context-test.ps1
+```
+
+覆盖：
+
+- `X-Tenant-Id` 覆盖 query/body 中的租户。
+- `X-Actor-Id` 和 `X-Request-Source` 覆盖 query/body 中的操作人和来源，并写入审计。
+- `X-Permission-Tags` 作为检索权限上下文生效。
+- 批量重建记录 Header 中的操作人和来源。
+
+## 认证上下文模式
+
+首版支持三种认证上下文模式：
+
+| 模式 | 适用范围 | 行为 |
+| --- | --- | --- |
+| `local` | 本地 PoC、自动化脚本 | Header 可选，保留 query/body 参数兜底 |
+| `gateway` | 测试/联调环境 | 身份 Header 由可信网关注入，缺少必要字段时拒绝 |
+| `iam` | 生产环境 | 身份和权限标签由 IAM/SSO 或认证网关注入，API 不直接信任终端用户自传身份 |
+
+相关环境变量：
+
+```text
+AUTH_CONTEXT_MODE=local|gateway|iam
+AUTH_TRUSTED_HEADER_ENABLED=true|false
+AUTH_REQUIRE_ACTOR=true|false
+AUTH_REQUIRE_TENANT=true|false
+AUTH_DEFAULT_REQUEST_SOURCE=api
+AUTH_DEFAULT_PERMISSION_TAGS=public
+AUTH_EMPTY_PERMISSION_POLICY=public_only|deny
+```
+
+新增错误码：
+
+| code | HTTP | 含义 |
+| --- | --- | --- |
+| `AUTH_CONTEXT_MISSING` | 401 | `gateway` / `iam` 模式缺少必要身份上下文 |
+| `AUTH_CONTEXT_INVALID` | 400 | 认证上下文字段格式非法 |
+| `AUTH_CONTEXT_FORBIDDEN` | 403 | 权限上下文缺失或无权访问 |
+
 ## 当前边界
 
-- 当前权限治理只实现最小标签交集过滤，尚未接入真实鉴权、用户组、角色和限流。
-- 当前未实现人工重试接口。
-- 当前已实现文档删除后不可检索、文档更新后新版本可见、按 `document_id` 重建当前可见版本索引、最小文档操作审计、document 级操作锁和失败 job 人工重试；批量重建、审计检索筛选、锁超时释放接口和完整安全审计仍未实现。
+- 当前权限治理只实现最小标签交集过滤；`gateway` / `iam` 模式要求身份 Header 来自可信网关或 IAM，但本服务本身不实现完整用户组、角色和限流系统。
+- 当前已实现文档删除后不可检索、文档更新后新版本可见、按 `document_id` 重建当前可见版本索引、最小文档操作审计、document 级操作锁、失败 job 人工重试、批量重建首版、滞留锁安全释放和批量失败项重试/取消；完整安全审计仍需后续结合客户鉴权体系增强。
 - 当前精排已完成本地 BGE `BAAI/bge-reranker-base` 真实链路验证；生产选型、服务容量和排序收益评估仍需后续压测与评测集验证。
 - 当前检索质量验证只覆盖 Demo 样例集，不代表真实生产语料效果。

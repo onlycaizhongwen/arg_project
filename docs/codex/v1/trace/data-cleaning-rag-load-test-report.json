@@ -1,0 +1,30 @@
+﻿{
+    "generated_at":  "2026-05-18T07:50:17.2132517Z",
+    "tenant_id":  "default",
+    "knowledge_base_id":  "kb-load-test",
+    "upload":  {
+                   "count":  2,
+                   "total_seconds":  2.19,
+                   "throughput_docs_per_sec":  0.915,
+                   "p50_ms":  55.23,
+                   "p95_ms":  59.24,
+                   "p99_ms":  59.24
+               },
+    "search":  {
+                   "count":  8,
+                   "concurrency":  2,
+                   "total_seconds":  4.32,
+                   "qps":  1.852,
+                   "failure_count":  0,
+                   "p50_ms":  521.23,
+                   "p95_ms":  608.25,
+                   "p99_ms":  608.25
+               },
+    "rerank":  {
+                   "enabled":  true,
+                   "size":  5,
+                   "provider":  "external",
+                   "degraded_count":  0,
+                   "average_score_count":  2
+               }
+}
